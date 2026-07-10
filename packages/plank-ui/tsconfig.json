@@ -1,0 +1,20 @@
+{
+  "extends": "@plank/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "paths": {
+      "@plank/ui/components": ["./src/components"],
+      "@plank/ui/components/*": ["./src/components/*"],
+      "@plank/ui/utils": ["./src/utils/index.ts"],
+      "@plank/ui/utils/*": ["./src/utils/*"],
+      "@plank/ui/hooks": ["./src/hooks"],
+      "@plank/ui/hooks/*": ["./src/hooks/*"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*"]
+}

@@ -7,6 +7,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import "@plank/ui/styles.css";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   return {};

@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { ServerModule } from "@/server/module";
+import { ServerModule } from "../../server/module";
 
 export class HealthcheckModule extends ServerModule {
   name = "healthcheck";
