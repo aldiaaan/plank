@@ -1,10 +1,11 @@
 import { DevelopmentServer } from "../server/development-server";
+import { killPort } from "../server/kill-port";
 
 async function main() {
-  const server = new DevelopmentServer({
-    port: 3000,
-  });
+  const port = 3000;
+  await killPort(port);
 
+  const server = new DevelopmentServer({ port });
   await server.start();
 }
 

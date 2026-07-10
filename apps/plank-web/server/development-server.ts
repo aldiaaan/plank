@@ -17,7 +17,7 @@ export class DevelopmentServer extends BaseServer {
     this._server = createServer(this._express);
 
     this._express.use((req, res, next) => {
-      const nonce = crypto.randomBytes(16).toString("base64");
+      const nonce = crypto.randomBytes(32).toString("base64");
       res.locals.nonce = nonce;
       req.headers["x-csp-nonce"] = nonce;
       next();
