@@ -1,0 +1,10 @@
+{
+  "name": "@plank/tsconfig",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "files": ["base.json"],
+  "exports": {
+    "./base.json": "./base.json"
+  }
+}

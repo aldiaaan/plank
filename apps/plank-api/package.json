@@ -1,0 +1,35 @@
+{
+  "name": "@plank/api",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.11.0",
+      "onFail": "download"
+    }
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development TSX_NO_CLEAR=true tsx --watch src/index.ts",
+    "build": "tsc && tsc-alias",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@plank/server": "workspace:*"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@plank/eslint": "workspace:*",
+    "@plank/tsconfig": "workspace:*",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.4",
+    "tsc-alias": "^1.9.0",
+    "tsx": "^4.23.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  }
+}

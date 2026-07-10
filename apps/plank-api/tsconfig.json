@@ -1,0 +1,16 @@
+{
+  "extends": "@plank/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "paths": {
+      "@plank/server": ["../../packages/plank-server/src/index.ts"]
+    }
+  },
+  "references": [{ "path": "../../packages/plank-server" }],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
+}

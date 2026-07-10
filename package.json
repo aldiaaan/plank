@@ -1,0 +1,9 @@
+{
+  "name": "plank",
+  "version": "1.0.0",
+  "scripts": {},
+  "keywords": [],
+  "author": "Aldian",
+  "license": "MIT",
+  "packageManager": "pnpm@11.11.0"
+}

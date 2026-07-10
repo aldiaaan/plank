@@ -1,0 +1,20 @@
+{
+  "name": "@plank/eslint",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "files": ["base.js"],
+  "exports": {
+    "./base": "./base.js",
+    "./base.js": "./base.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.22.0",
+    "typescript": ">=5.0.0 <7.0.0"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.22.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
