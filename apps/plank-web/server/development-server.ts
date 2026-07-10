@@ -4,6 +4,9 @@ import express, { type Express } from "express";
 import path from "node:path";
 import { pinoHttp } from "pino-http";
 import pretty from "pino-pretty";
+import crypto from "node:crypto";
+import helmet from "helmet";
+
 export class DevelopmentServer extends BaseServer {
   _express: Express;
   _server: HttpServer;
@@ -12,6 +15,27 @@ export class DevelopmentServer extends BaseServer {
     super(options);
     this._express = express();
     this._server = createServer(this._express);
+
+    this._express.use((req, res, next) => {
+      const nonce = crypto.randomBytes(16).toString("base64");
+      res.locals.nonce = nonce;
+      req.headers["x-csp-nonce"] = nonce;
+      next();
+    });
+
+    this._express.use(
+      helmet.contentSecurityPolicy({
+        useDefaults: true,
+        directives: {
+          "script-src": [
+            "'self'",
+            (_req, res) => `'nonce-${(res as express.Response).locals.nonce}'`,
+          ],
+          // If using Vite in dev mode, you might need 'unsafe-inline' for style-src HMR
+          "style-src": ["'self'", "'unsafe-inline'"],
+        },
+      }),
+    );
   }
 
   async start(): Promise<void> {

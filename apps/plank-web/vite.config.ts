@@ -13,7 +13,7 @@ export default defineConfig(({ isSsrBuild }) => ({
   ],
   emptyOutDir: true,
   ssr: {
-    noExternal: [],
+    external: ["react-router", "@react-router/express", "@react-router/node"],
   },
   chunkSizeWarningLimit: 1024 * 4,
   reportCompressedSize: true,

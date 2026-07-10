@@ -5,7 +5,7 @@ export default function HomePage() {
   return (
     <div className="text-2xl font-bold">
       HomePage!!
-      <Button>Click me</Button>
+      <Button>asdass32324das me</Button>
     </div>
   );
 }
