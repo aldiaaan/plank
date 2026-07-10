@@ -30,12 +30,14 @@
     "@plank/eslint": "workspace:*",
     "@plank/tsconfig": "workspace:*",
     "@types/node": "^26.1.1",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
     "@typescript/native": "npm:typescript@^7.0.2",
     "eslint": "^9.39.4",
-    "tsc-alias": "^1.9.0"
+    "tsc-alias": "^1.9.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "dependencies": {
+    "@fastify/swagger": "^9.8.0",
+    "@scalar/fastify-api-reference": "^1.62.5",
     "fastify": "^5.10.0"
   }
 }

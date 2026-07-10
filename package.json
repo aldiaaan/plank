@@ -1,9 +1,14 @@
 {
   "name": "plank",
   "version": "1.0.0",
-  "scripts": {},
+  "scripts": {
+    "dev": "turbo run dev --filter=@plank/web --filter=@plank/api"
+  },
   "keywords": [],
   "author": "Aldian",
   "license": "MIT",
-  "packageManager": "pnpm@11.11.0"
+  "packageManager": "pnpm@11.11.0",
+  "devDependencies": {
+    "turbo": "^2.10.4"
+  }
 }

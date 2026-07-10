@@ -1,46 +1,4 @@
 services:
-  web:
-    container_name: plank-web
-    build:
-      context: .
-      dockerfile: apps/plank-web/Dockerfile
-      target: dev-base
-    working_dir: /app/apps/plank-web
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/packages/plank-ui/node_modules
-      - /app/apps/plank-web/node_modules
-    networks:
-      plank:
-    tty: true
-  api:
-    container_name: plank-api
-    build:
-      context: .
-      dockerfile: apps/plank-api/Dockerfile
-      target: dev-base
-    working_dir: /app/apps/plank-api
-    ports:
-      - "4000:4000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/packages/plank-server/node_modules
-      - /app/apps/plank-api/node_modules
-    environment:
-      DATABASE_URL: postgres://plank:plank@postgres.internal:5432/plank?sslmode=disable
-    depends_on:
-      postgres:
-        condition: service_healthy
-    stdin_open: true
-    tty: true
-    networks:
-      plank:
-        aliases:
-          - api.internal
   pgweb:
     container_name: plank-pgweb
     image: sosedoff/pgweb
