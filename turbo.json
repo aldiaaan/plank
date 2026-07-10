@@ -1,6 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "codegen": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*"],
+      "outputs": ["src/__generated__/**"],
+      "persistent": true
+    },
     "dev": {
       "cache": false,
       "persistent": true

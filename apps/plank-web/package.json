@@ -19,8 +19,10 @@
   },
   "type": "module",
   "dependencies": {
+    "@plank/client": "workspace:*",
     "@react-router/express": "^8.2.0",
     "@react-router/node": "^8.2.0",
+    "@tanstack/react-query": "^5.101.2",
     "express": "^5.2.1",
     "isbot": "^5.2.0",
     "pino": "^10.3.1",

@@ -16,7 +16,8 @@
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "~/*": ["./app/*"],
-      "@plank/ui/*": ["../../packages/plank-ui/src/*"]
+      "@plank/ui/*": ["../../packages/plank-ui/src/*"],
+      "@plank/client": ["../../packages/plank-client/src/index.ts"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,

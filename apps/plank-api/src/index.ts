@@ -5,11 +5,17 @@ import {
 } from "@plank/server";
 
 async function main() {
-  const modules = [new HealthcheckModule()];
+  const modules = [];
 
   if (process.env.NODE_ENV === "development") {
-    modules.push(new DocumentationModule());
+    modules.push(
+      new DocumentationModule({
+        baseUrl: "http://localhost:4000",
+      }),
+    );
   }
+
+  modules.push(new HealthcheckModule());
 
   const server = new PlankServer({
     port: 4000,
