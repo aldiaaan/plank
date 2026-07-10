@@ -46,12 +46,7 @@ export class DevelopmentServer extends BaseServer {
     const server = await vite.createServer({
       clearScreen: false,
       server: {
-        fs: {
-          allow: ["/app"],
-        },
         watch: {
-          usePolling: true,
-          interval: 100,
           ignored: [
             "**/node_modules/**",
             "**/.git/**",
@@ -61,8 +56,6 @@ export class DevelopmentServer extends BaseServer {
         },
         hmr: {
           server: this._server,
-          clientPort: this.port,
-          protocol: "ws",
         },
         middlewareMode: true,
       },
