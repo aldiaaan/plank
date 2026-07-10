@@ -31,18 +31,6 @@ export class DevelopmentServer extends BaseServer {
   async initialize(): Promise<void> {
     const vite = await import("vite");
 
-    this._express.use(
-      pinoHttp({
-        level: "debug",
-        stream: pretty({
-          colorize: true,
-          translateTime: "yyyy/mm/dd - HH:MM:ss",
-          ignore: "pid,hostname,req,res,responseTime",
-          messageFormat:
-            "{msg} | {req.method} | {req.url} | {res.statusCode} | {responseTime}ms",
-        }),
-      }),
-    );
     const server = await vite.createServer({
       clearScreen: false,
       server: {
@@ -63,6 +51,19 @@ export class DevelopmentServer extends BaseServer {
     });
 
     this._express.use(server.middlewares);
+
+    this._express.use(
+      pinoHttp({
+        level: "debug",
+        stream: pretty({
+          colorize: true,
+          translateTime: "yyyy/mm/dd - HH:MM:ss",
+          ignore: "pid,hostname,req,res,responseTime",
+          messageFormat:
+            "{msg} | {req.method} | {req.url} | {res.statusCode} | {responseTime}ms",
+        }),
+      }),
+    );
 
     this._express.use(async (req, res, next) => {
       try {

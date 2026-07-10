@@ -2,7 +2,9 @@
   "name": "plank",
   "version": "1.0.0",
   "scripts": {
-    "dev": "turbo run dev --filter=@plank/web --filter=@plank/api"
+    "dev": "turbo run dev codegen:watch --filter=@plank/web --filter=@plank/api --filter=@plank/client --parallel",
+    "codegen": "turbo run codegen --filter=@plank/client",
+    "codegen:watch": "pnpm --filter @plank/client codegen:watch"
   },
   "keywords": [],
   "author": "Aldian",

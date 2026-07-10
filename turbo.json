@@ -6,9 +6,12 @@
       "outputs": ["dist/**"]
     },
     "codegen": {
-      "dependsOn": ["^build"],
-      "inputs": ["src/**/*"],
-      "outputs": ["src/__generated__/**"],
+      "cache": false,
+      "inputs": ["bin/**/*", "../plank-server/src/**/*"],
+      "outputs": ["src/__generated__/**"]
+    },
+    "codegen:watch": {
+      "cache": false,
       "persistent": true
     },
     "dev": {

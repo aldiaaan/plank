@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "codegen": "tsx bin/codegen.ts"
+    "codegen": "tsx bin/codegen.ts",
+    "codegen:watch": "chokidar \"../plank-server/src/**/*\" \"bin/**/*\" -c \"tsx bin/codegen.ts\" --initial",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +16,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "chokidar-cli": "^3.0.0",
     "@hey-api/openapi-ts": "0.99.0",
     "@plank/server": "workspace:*",
     "@plank/tsconfig": "workspace:*",

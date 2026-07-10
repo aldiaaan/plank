@@ -19,6 +19,7 @@ export type GetPingResponses = {
      */
     200: {
         message: string;
+        hhh2?: string;
     };
 };
 

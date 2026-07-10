@@ -7,6 +7,7 @@ const Querystring = Type.Object({
 
 const Response = Type.Object({
   message: Type.String(),
+  hhh2: Type.Optional(Type.String()),
 });
 
 export const GET = defineRoute({
