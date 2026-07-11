@@ -20,6 +20,7 @@ async function main() {
   const server = new PlankServer({
     port: 4000,
     modules,
+    databaseUrl: process.env.DATABASE_URL!,
   });
 
   await server.start();

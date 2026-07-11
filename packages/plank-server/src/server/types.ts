@@ -1,14 +1,85 @@
 import type { AwilixContainer } from "awilix";
-import { ServerModule } from "./module";
-
+import type {
+  ContextConfigDefault,
+  FastifyBaseLogger,
+  FastifyInstance,
+  FastifySchema,
+  RawReplyDefaultExpression,
+  RawRequestDefaultExpression,
+  RawServerDefault,
+  RouteGenericInterface,
+  RouteHandlerMethod,
+  RouteOptions as FastifyRouteOptions,
+} from "fastify";
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import type { ServerModule } from "./module";
+import type { Database } from "@plank/db";
+import type { EventBus } from "../modules/event-bus/event-bus.module";
+import type { ConnectionModuleOptions } from "../modules/connection/connection.module";
 export type PlankServerOptions = {
   port: number;
   modules: ServerModule[];
+  databaseUrl: ConnectionModuleOptions["databaseUrl"];
+};
+
+export type PlankFastifyInstance = FastifyInstance<
+  RawServerDefault,
+  RawRequestDefaultExpression<RawServerDefault>,
+  RawReplyDefaultExpression<RawServerDefault>,
+  FastifyBaseLogger,
+  TypeBoxTypeProvider
+>;
+
+export type RouteHandler = RouteHandlerMethod<
+  RawServerDefault,
+  RawRequestDefaultExpression<RawServerDefault>,
+  RawReplyDefaultExpression<RawServerDefault>,
+  RouteGenericInterface,
+  ContextConfigDefault,
+  FastifySchema,
+  TypeBoxTypeProvider,
+  FastifyBaseLogger
+>;
+
+export type RouteOptions = Omit<
+  FastifyRouteOptions<
+    RawServerDefault,
+    RawRequestDefaultExpression<RawServerDefault>,
+    RawReplyDefaultExpression<RawServerDefault>,
+    RouteGenericInterface,
+    ContextConfigDefault,
+    FastifySchema,
+    TypeBoxTypeProvider,
+    FastifyBaseLogger
+  >,
+  "method" | "url" | "handler"
+>;
+
+export type RouteDefinition = RouteOptions & { handler: RouteHandler };
+
+export type RouteExport = RouteHandler | RouteDefinition;
+
+export type Route = {
+  Handler: RouteHandler;
+  Definition: RouteDefinition;
+  Options: RouteOptions;
+  Export: RouteExport;
+};
+
+export type ModuleRegistrationContext = {
+  app: PlankFastifyInstance;
+  container: AwilixContainer;
+};
+
+export type DocumentationModuleOptions = {
+  baseUrl: string;
 };
 
 declare module "fastify" {
   interface FastifyRequest {
-    container: AwilixContainer;
-    // container: AwilixContainer | null;
+    container: AwilixContainer<{
+      db: Database;
+      eventBus: EventBus;
+    }>;
   }
 }

@@ -1,9 +1,9 @@
 import { fastify } from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import * as awilix from "awilix";
-import { PlankServerOptions } from "./types";
-import { ModuleRegistrationContext } from "./module";
+import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 import { EventBusModule } from "../modules/event-bus/event-bus.module";
+import { ConnectionModule } from "../modules/connection/connection.module";
 
 export class PlankServer {
   private readonly container = awilix.createContainer();
@@ -11,18 +11,14 @@ export class PlankServer {
     logger: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
-  constructor(
-    private readonly options: PlankServerOptions = {
-      port: 4000,
-      modules: [],
-    },
-  ) {}
+  constructor(private readonly options: PlankServerOptions) {}
 
   async start() {
     this.app.log.info(`Starting Plank server on port ${this.options.port}`);
 
     this.app.decorateRequest(
       "container",
+      // @ts-expect-error - TODO: fix this
       null as unknown as awilix.AwilixContainer,
     );
 
@@ -39,7 +35,11 @@ export class PlankServer {
       container: this.container,
     };
 
-    for (const module of [new EventBusModule(), ...this.options.modules]) {
+    for (const module of [
+      new ConnectionModule({ databaseUrl: this.options.databaseUrl }),
+      new EventBusModule(),
+      ...this.options.modules,
+    ]) {
       this.app.log.info(`Registering module ${module.name}`);
       await module.register(context);
     }

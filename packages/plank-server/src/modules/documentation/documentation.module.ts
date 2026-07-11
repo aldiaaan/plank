@@ -1,8 +1,8 @@
-import { ModuleRegistrationContext, ServerModule } from "../../server/module";
-
-export type DocumentationModuleOptions = {
-  baseUrl: string;
-};
+import { ServerModule } from "../../server/module";
+import type {
+  DocumentationModuleOptions,
+  ModuleRegistrationContext,
+} from "../../server/types";
 
 export class DocumentationModule extends ServerModule {
   name = "documentation";

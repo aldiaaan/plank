@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development TSX_NO_CLEAR=true tsx --watch src/index.ts",
+    "dev": "cross-env NODE_ENV=development TSX_NO_CLEAR=true tsx --env-file=.env --watch src/index.ts",
     "build": "tsc && tsc-alias",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "lint": "eslint .",

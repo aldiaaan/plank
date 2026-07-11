@@ -9,3 +9,6 @@ clean:
 
 dev: infra
     pnpm dev
+
+db +args:
+    pnpm --filter @plank/db exec drizzle-kit {{args}}

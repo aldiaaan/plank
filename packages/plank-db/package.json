@@ -1,11 +1,18 @@
 {
   "name": "@plank/db",
   "version": "1.0.0",
-  "scripts": {},
+  "scripts": {
+    "dev": "drizzle-kit studio",
+    "db:studio": "drizzle-kit studio"
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./queries/*": "./src/queries/*.ts"
+  },
   "dependencies": {
     "dotenv": "^17.4.2",
     "drizzle-orm": "1.0.0-rc.4",

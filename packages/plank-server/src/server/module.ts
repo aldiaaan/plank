@@ -1,26 +1,24 @@
-import type { AwilixContainer } from "awilix";
 import { readdir } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { join } from "node:path";
 import type {
   ContextConfigDefault,
   FastifyBaseLogger,
-  FastifyInstance,
   FastifySchema,
   HTTPMethods,
   RawReplyDefaultExpression,
   RawRequestDefaultExpression,
   RawServerDefault,
   RouteGenericInterface,
-  RouteHandlerMethod,
-  RouteOptions as FastifyRouteOptions,
   RouteShorthandOptionsWithHandler,
 } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import {
-  filenameToRoutePath,
-  normalizeRouteExport,
-} from "./utils/route";
+import { filenameToRoutePath, normalizeRouteExport } from "./utils/route";
+import type {
+  ModuleRegistrationContext,
+  RouteDefinition,
+  RouteExport,
+} from "./types";
 
 const HTTP_METHODS = [
   "GET",
@@ -31,50 +29,6 @@ const HTTP_METHODS = [
   "HEAD",
   "OPTIONS",
 ] as const;
-
-export type PlankFastifyInstance = FastifyInstance<
-  RawServerDefault,
-  RawRequestDefaultExpression<RawServerDefault>,
-  RawReplyDefaultExpression<RawServerDefault>,
-  FastifyBaseLogger,
-  TypeBoxTypeProvider
->;
-
-export type RouteHandler = RouteHandlerMethod<
-  RawServerDefault,
-  RawRequestDefaultExpression<RawServerDefault>,
-  RawReplyDefaultExpression<RawServerDefault>,
-  RouteGenericInterface,
-  ContextConfigDefault,
-  FastifySchema,
-  TypeBoxTypeProvider,
-  FastifyBaseLogger
->;
-
-export type RouteOptions = Omit<
-  FastifyRouteOptions<
-    RawServerDefault,
-    RawRequestDefaultExpression<RawServerDefault>,
-    RawReplyDefaultExpression<RawServerDefault>,
-    RouteGenericInterface,
-    ContextConfigDefault,
-    FastifySchema,
-    TypeBoxTypeProvider,
-    FastifyBaseLogger
-  >,
-  "method" | "url" | "handler"
->;
-
-export type RouteDefinition = RouteOptions & { handler: RouteHandler };
-
-export type RouteExport = RouteHandler | RouteDefinition;
-
-export type Route = {
-  Handler: RouteHandler;
-  Definition: RouteDefinition;
-  Options: RouteOptions;
-  Export: RouteExport;
-};
 
 export function defineRoute<
   RouteGeneric extends RouteGenericInterface = RouteGenericInterface,
@@ -94,11 +48,6 @@ export function defineRoute<
 ): RouteDefinition {
   return options as unknown as RouteDefinition;
 }
-
-export type ModuleRegistrationContext = {
-  app: PlankFastifyInstance;
-  container: AwilixContainer;
-};
 
 export abstract class ServerModule {
   abstract name: string;

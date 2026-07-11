@@ -36,6 +36,7 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "dependencies": {
+    "@plank/db": "workspace:*",
     "@fastify/swagger": "^9.8.0",
     "@fastify/type-provider-typebox": "^6.1.0",
     "@scalar/fastify-api-reference": "^1.62.5",

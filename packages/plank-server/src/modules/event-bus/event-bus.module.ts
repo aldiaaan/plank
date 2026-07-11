@@ -1,7 +1,8 @@
 import { asClass } from "awilix";
-import { ModuleRegistrationContext, ServerModule } from "../../server/module";
+import { ServerModule } from "../../server/module";
+import type { ModuleRegistrationContext } from "../../server/types";
 
-class EventBus {
+export class EventBus {
   constructor() {}
 
   async publish(event: string) {
