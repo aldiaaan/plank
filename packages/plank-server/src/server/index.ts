@@ -1,8 +1,12 @@
 import { fastify } from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import * as awilix from "awilix";
 import { PlankServerOptions } from "./types";
+import { ModuleRegistrationContext } from "./module";
+import { EventBusModule } from "../modules/event-bus/event-bus.module";
 
 export class PlankServer {
+  private readonly container = awilix.createContainer();
   private readonly app = fastify({
     logger: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
@@ -17,15 +21,45 @@ export class PlankServer {
   async start() {
     this.app.log.info(`Starting Plank server on port ${this.options.port}`);
 
-    for (const module of this.options.modules) {
+    this.app.decorateRequest(
+      "container",
+      null as unknown as awilix.AwilixContainer,
+    );
+
+    this.app.addHook("onRequest", async (request) => {
+      request.container = this.container.createScope();
+    });
+
+    this.app.addHook("onResponse", async (request) => {
+      await request.container.dispose();
+    });
+
+    const context: ModuleRegistrationContext = {
+      app: this.app,
+      container: this.container,
+    };
+
+    for (const module of [new EventBusModule(), ...this.options.modules]) {
       this.app.log.info(`Registering module ${module.name}`);
-      await module.register(this.app);
+      await module.register(context);
     }
+
+    const shutdownSignals = ["SIGTERM", "SIGINT"];
+
+    shutdownSignals.forEach((signal) => {
+      process.on(signal, async () => {
+        this.app.log.info(
+          `Received ${signal}, beginning graceful server teardown.`,
+        );
+        await this.stop();
+      });
+    });
 
     await this.app.listen({ port: this.options.port, host: "0.0.0.0" });
   }
 
   async stop() {
     await this.app.close();
+    await this.container.dispose();
   }
 }

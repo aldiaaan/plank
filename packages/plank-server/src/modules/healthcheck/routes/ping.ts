@@ -18,6 +18,8 @@ export const GET = defineRoute({
     },
   },
   handler: (request, reply) => {
+    request.container.resolve("eventBus");
+
     const name = request.query.name ?? "world";
     reply.send({ message: `pong ${name}` });
   },

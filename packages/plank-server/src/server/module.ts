@@ -1,6 +1,7 @@
+import type { AwilixContainer } from "awilix";
 import { readdir } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { basename, extname, join } from "node:path";
+import { join } from "node:path";
 import type {
   ContextConfigDefault,
   FastifyBaseLogger,
@@ -16,6 +17,10 @@ import type {
   RouteShorthandOptionsWithHandler,
 } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import {
+  filenameToRoutePath,
+  normalizeRouteExport,
+} from "./utils/route";
 
 const HTTP_METHODS = [
   "GET",
@@ -90,33 +95,10 @@ export function defineRoute<
   return options as unknown as RouteDefinition;
 }
 
-function isHandler(value: RouteExport): value is RouteHandler {
-  return typeof value === "function";
-}
-
-function normalizeRouteExport(value: RouteExport): {
-  handler: RouteHandler;
-  options: RouteOptions;
-} {
-  if (isHandler(value)) {
-    return { handler: value, options: {} };
-  }
-  const { handler, ...options } = value;
-  return { handler, options };
-}
-
-function filenameToRoutePath(file: string): string {
-  let name = basename(file, extname(file));
-  if (name.endsWith(".d")) name = name.slice(0, -2);
-  if (name === "index") return "";
-  const segments = name.split(".");
-  const path = segments
-    .map((segment) =>
-      segment.startsWith("$") ? `:${segment.slice(1)}` : segment,
-    )
-    .join("/");
-  return `/${path}`;
-}
+export type ModuleRegistrationContext = {
+  app: PlankFastifyInstance;
+  container: AwilixContainer;
+};
 
 export abstract class ServerModule {
   abstract name: string;
@@ -129,11 +111,13 @@ export abstract class ServerModule {
     return new URL(`../modules/${this.name}/routes/`, import.meta.url);
   }
 
-  async register(app: PlankFastifyInstance): Promise<void> {
-    await this.registerRoutes(app);
+  async register(context: ModuleRegistrationContext): Promise<void> {
+    await this.registerRoutes(context);
   }
 
-  private async registerRoutes(app: PlankFastifyInstance): Promise<void> {
+  private async registerRoutes(
+    context: ModuleRegistrationContext,
+  ): Promise<void> {
     const dir = fileURLToPath(this.routesDir());
     let entries: string[];
     try {
@@ -160,13 +144,13 @@ export abstract class ServerModule {
         if (!exportValue) continue;
 
         const { handler, options } = normalizeRouteExport(exportValue);
-        app.route({
+        context.app.route({
           method: method as HTTPMethods,
           url,
           handler,
           ...options,
         });
-        app.log.info(
+        context.app.log.info(
           { module: this.name, method, url },
           `Registered route ${method} ${url}`,
         );

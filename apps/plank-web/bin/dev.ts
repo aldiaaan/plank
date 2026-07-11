@@ -1,5 +1,5 @@
+import { killPort } from "@plank/server";
 import { DevelopmentServer } from "../server/development-server";
-import { killPort } from "../server/kill-port";
 
 async function main() {
   const port = 3000;

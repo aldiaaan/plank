@@ -1,4 +1,4 @@
-import { ServerModule, type PlankFastifyInstance } from "../../server/module";
+import { ModuleRegistrationContext, ServerModule } from "../../server/module";
 
 export type DocumentationModuleOptions = {
   baseUrl: string;
@@ -11,8 +11,8 @@ export class DocumentationModule extends ServerModule {
     super();
   }
 
-  async register(app: PlankFastifyInstance) {
-    await app.register(import("@fastify/swagger"), {
+  async register(context: ModuleRegistrationContext) {
+    await context.app.register(import("@fastify/swagger"), {
       openapi: {
         servers: [{ url: this.options?.baseUrl ?? "http://localhost:3000" }],
         info: {
@@ -22,11 +22,11 @@ export class DocumentationModule extends ServerModule {
       },
     });
 
-    app.get("/openapi.json", { schema: { hide: true } }, async () =>
-      app.swagger(),
+    context.app.get("/openapi.json", { schema: { hide: true } }, async () =>
+      context.app.swagger(),
     );
 
-    await app.register(import("@scalar/fastify-api-reference"), {
+    await context.app.register(import("@scalar/fastify-api-reference"), {
       routePrefix: "/reference",
     });
   }

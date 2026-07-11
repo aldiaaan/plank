@@ -10,3 +10,4 @@ export {
   type RouteExport,
   type PlankFastifyInstance,
 } from "./server/module";
+export { killPort } from "./server/utils/kill-port";
