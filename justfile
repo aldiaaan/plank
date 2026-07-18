@@ -8,7 +8,10 @@ clean:
     docker compose down -v --remove-orphans
 
 dev: infra
-    pnpm dev
+    pnpm exec turbo run dev --ui=tui codegen:watch --filter=@plank/web --filter=@plank/api --filter=@plank/client --filter=@plank/db --parallel
+
+codegen:
+    pnpm exec turbo run codegen --filter=@plank/client
 
 db +args:
     pnpm --filter @plank/db exec drizzle-kit {{args}}

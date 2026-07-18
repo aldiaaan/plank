@@ -21,6 +21,8 @@ async function main() {
     port: 4000,
     modules,
     databaseUrl: process.env.DATABASE_URL!,
+    superAdminEmail: process.env.SUPERADMIN_EMAIL,
+    superAdminPassword: process.env.SUPERADMIN_PASSWORD,
   });
 
   await server.start();

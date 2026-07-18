@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "drizzle-kit studio",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -11,6 +13,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./auth": "./src/queries/auth.ts",
     "./queries/*": "./src/queries/*.ts"
   },
   "dependencies": {
@@ -19,8 +22,11 @@
     "pg": "^8.22.0"
   },
   "devDependencies": {
+    "@plank/eslint": "workspace:*",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "1.0.0-rc.4",
-    "tsx": "^4.23.0"
+    "eslint": "^9.39.4",
+    "tsx": "^4.23.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }

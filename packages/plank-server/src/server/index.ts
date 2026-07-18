@@ -4,11 +4,24 @@ import * as awilix from "awilix";
 import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 import { EventBusModule } from "../modules/event-bus/event-bus.module";
 import { ConnectionModule } from "../modules/connection/connection.module";
+import { AuthModule } from "../modules/auth/auth.module";
 
 export class PlankServer {
   private readonly container = awilix.createContainer();
   private readonly app = fastify({
-    logger: true,
+    logger:
+      process.env.NODE_ENV === "development"
+        ? {
+            transport: {
+              target: "pino-pretty",
+              options: {
+                colorize: true,
+                translateTime: "yyyy/mm/dd - HH:MM:ss",
+                ignore: "pid,hostname",
+              },
+            },
+          }
+        : true,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   constructor(private readonly options: PlankServerOptions) {}
@@ -18,7 +31,8 @@ export class PlankServer {
 
     this.app.decorateRequest(
       "container",
-      // @ts-expect-error - TODO: fix this
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - TODO: give better type to the container
       null as unknown as awilix.AwilixContainer,
     );
 
@@ -32,6 +46,8 @@ export class PlankServer {
 
     const context: ModuleRegistrationContext = {
       app: this.app,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - TODO: give better type to the container
       container: this.container,
     };
 
@@ -39,6 +55,10 @@ export class PlankServer {
       new ConnectionModule({ databaseUrl: this.options.databaseUrl }),
       new EventBusModule(),
       ...this.options.modules,
+      new AuthModule({
+        initialSuperAdminEmail: this.options.superAdminEmail,
+        initialSuperAdminPassword: this.options.superAdminPassword,
+      }),
     ]) {
       this.app.log.info(`Registering module ${module.name}`);
       await module.register(context);

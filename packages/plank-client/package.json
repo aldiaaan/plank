@@ -5,7 +5,9 @@
   "scripts": {
     "codegen": "tsx bin/codegen.ts",
     "codegen:watch": "chokidar \"../plank-server/src/**/*\" \"bin/**/*\" -c \"tsx bin/codegen.ts\" --initial",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -18,11 +20,14 @@
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
     "@hey-api/openapi-ts": "0.99.0",
+    "@plank/eslint": "workspace:*",
     "@plank/server": "workspace:*",
     "@plank/tsconfig": "workspace:*",
+    "eslint": "^9.39.4",
     "tsx": "^4.23.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
+
   "peerDependencies": {
     "@tanstack/react-query": "^5.101.2"
   }

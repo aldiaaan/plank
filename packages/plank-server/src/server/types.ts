@@ -20,6 +20,8 @@ export type PlankServerOptions = {
   port: number;
   modules: ServerModule[];
   databaseUrl: ConnectionModuleOptions["databaseUrl"];
+  superAdminEmail?: string;
+  superAdminPassword?: string;
 };
 
 export type PlankFastifyInstance = FastifyInstance<
@@ -66,9 +68,14 @@ export type Route = {
   Export: RouteExport;
 };
 
+export type ModuleRegistrationCradle = {
+  db: Database;
+  eventBus: EventBus;
+};
 export type ModuleRegistrationContext = {
   app: PlankFastifyInstance;
-  container: AwilixContainer;
+  container: AwilixContainer<ModuleRegistrationCradle>;
+  config: PlankServerOptions;
 };
 
 export type DocumentationModuleOptions = {
@@ -77,9 +84,6 @@ export type DocumentationModuleOptions = {
 
 declare module "fastify" {
   interface FastifyRequest {
-    container: AwilixContainer<{
-      db: Database;
-      eventBus: EventBus;
-    }>;
+    container: AwilixContainer<ModuleRegistrationCradle>;
   }
 }
