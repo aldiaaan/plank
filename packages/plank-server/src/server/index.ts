@@ -1,10 +1,13 @@
 import { fastify } from "fastify";
+import cors from "@fastify/cors";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import * as awilix from "awilix";
 import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 import { EventBusModule } from "../modules/event-bus/event-bus.module";
 import { ConnectionModule } from "../modules/connection/connection.module";
 import { AuthModule } from "../modules/auth/auth.module";
+import { SessionModule } from "../modules/session/session.module";
+import { ClientError, ServerError } from "./errors";
 
 export class PlankServer {
   private readonly container = awilix.createContainer();
@@ -26,8 +29,38 @@ export class PlankServer {
 
   constructor(private readonly options: PlankServerOptions) {}
 
+  async initializeErrorHandlers() {
+    this.app.setErrorHandler(async (error, _request, reply) => {
+      const stack = (error as Error).stack;
+      console.log({ error });
+      if (error instanceof ClientError) {
+        reply.status(error.statusCode).send(error.toJSON());
+      } else if (error instanceof ServerError) {
+        const json = error.toJSON();
+        reply.status(error.statusCode).send({
+          ...json,
+          message:
+            json.message + process.env.NODE_ENV === "development"
+              ? " " + stack
+              : "",
+        });
+      } else {
+        reply.status(500).send({
+          ...new ServerError().toJSON(),
+        });
+      }
+    });
+  }
+
   async start() {
     this.app.log.info(`Starting Plank server on port ${this.options.port}`);
+
+    await this.initializeErrorHandlers();
+
+    await this.app.register(cors, {
+      origin: this.options.allowedOrigin ?? false,
+      credentials: true,
+    });
 
     this.app.decorateRequest(
       "container",
@@ -54,6 +87,7 @@ export class PlankServer {
     for (const module of [
       new ConnectionModule({ databaseUrl: this.options.databaseUrl }),
       new EventBusModule(),
+      new SessionModule(),
       ...this.options.modules,
       new AuthModule({
         initialSuperAdminEmail: this.options.superAdminEmail,

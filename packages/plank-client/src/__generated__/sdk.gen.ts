@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetPingData, GetPingResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses } from './types.gen';
+import type { GetPingData, GetPingResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -20,8 +20,28 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 export const getPing = <ThrowOnError extends boolean = false>(options?: Options<GetPingData, ThrowOnError>): RequestResult<GetPingResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetPingResponses, unknown, ThrowOnError>({ url: '/ping', ...options });
 
+export const getUsers = <ThrowOnError extends boolean = false>(options?: Options<GetUsersData, ThrowOnError>): RequestResult<GetUsersResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetUsersResponses, unknown, ThrowOnError>({ url: '/users', ...options });
+
 export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostAuthLoginData, ThrowOnError>): RequestResult<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError> => (options.client ?? client).post<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError>({
     url: '/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const postAuthSignout = <ThrowOnError extends boolean = false>(options: Options<PostAuthSignoutData, ThrowOnError>): RequestResult<PostAuthSignoutResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostAuthSignoutResponses, unknown, ThrowOnError>({
+    url: '/auth/signout',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const postAuthVerify = <ThrowOnError extends boolean = false>(options: Options<PostAuthVerifyData, ThrowOnError>): RequestResult<PostAuthVerifyResponses, PostAuthVerifyErrors, ThrowOnError> => (options.client ?? client).post<PostAuthVerifyResponses, PostAuthVerifyErrors, ThrowOnError>({
+    url: '/auth/verify',
     ...options,
     headers: {
         'Content-Type': 'application/json',

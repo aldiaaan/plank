@@ -2,6 +2,7 @@ import {
   DocumentationModule,
   HealthcheckModule,
   PlankServer,
+  UserModule,
 } from "@plank/server";
 
 async function main() {
@@ -16,11 +17,13 @@ async function main() {
   }
 
   modules.push(new HealthcheckModule());
+  modules.push(new UserModule());
 
   const server = new PlankServer({
     port: 4000,
     modules,
     databaseUrl: process.env.DATABASE_URL!,
+    allowedOrigin: process.env.ALLOWED_ORIGIN ?? false,
     superAdminEmail: process.env.SUPERADMIN_EMAIL,
     superAdminPassword: process.env.SUPERADMIN_PASSWORD,
   });

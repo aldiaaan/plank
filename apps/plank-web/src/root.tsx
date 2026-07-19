@@ -8,23 +8,29 @@ import {
   ScrollRestoration,
 } from "react-router";
 import "@plank/ui/styles.css";
+import { Toaster } from "@plank/ui/components/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   return {};
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
-
         <Links />
       </head>
       <body className="antialiased">
-        {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <Toaster />
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

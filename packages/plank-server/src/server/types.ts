@@ -12,14 +12,28 @@ import type {
   RouteOptions as FastifyRouteOptions,
 } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import type { Database, Permission } from "@plank/db";
 import type { ServerModule } from "./module";
-import type { Database } from "@plank/db";
 import type { EventBus } from "../modules/event-bus/event-bus.module";
 import type { ConnectionModuleOptions } from "../modules/connection/connection.module";
+import { SessionService } from "@/modules/session/session.service";
+
+export type RequestUser = {
+  id: string;
+  email: string;
+  name: string;
+  permissions: Permission[];
+};
+
+export type RequestLocals = {
+  user: RequestUser | null;
+};
+
 export type PlankServerOptions = {
   port: number;
   modules: ServerModule[];
   databaseUrl: ConnectionModuleOptions["databaseUrl"];
+  allowedOrigin?: string | string[] | boolean;
   superAdminEmail?: string;
   superAdminPassword?: string;
 };
@@ -71,6 +85,7 @@ export type Route = {
 export type ModuleRegistrationCradle = {
   db: Database;
   eventBus: EventBus;
+  sessionService: SessionService;
 };
 export type ModuleRegistrationContext = {
   app: PlankFastifyInstance;
@@ -85,5 +100,6 @@ export type DocumentationModuleOptions = {
 declare module "fastify" {
   interface FastifyRequest {
     container: AwilixContainer<ModuleRegistrationCradle>;
+    locals: RequestLocals;
   }
 }

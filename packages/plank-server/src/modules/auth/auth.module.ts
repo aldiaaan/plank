@@ -1,15 +1,18 @@
 import type { Database } from "@plank/db";
 import { initializeSuperAdmin } from "@plank/db/auth";
 import type { FastifyBaseLogger } from "fastify";
-import { ModuleRegistrationContext } from "../../server/types";
+import type {
+  ModuleRegistrationContext,
+  RequestLocals,
+} from "../../server/types";
 import { ServerModule } from "../../server/module";
+import { SESSION_COOKIE_NAME } from "../session/constants";
 import { hashPassword } from "./utils";
 
 export type AuthModuleOptions = {
   initialSuperAdminEmail?: string;
   initialSuperAdminPassword?: string;
 };
-
 export class AuthModule extends ServerModule {
   name = "auth";
 
@@ -33,6 +36,28 @@ export class AuthModule extends ServerModule {
       const db = context.container.resolve("db");
       await this.ensureSuperAdmin(db, context.app.log);
     }
+
+    context.app.decorateRequest("locals", null as unknown as RequestLocals);
+
+    context.app.addHook("onRequest", async (request) => {
+      request.locals = { user: null };
+
+      const token = request.cookies[SESSION_COOKIE_NAME];
+      if (!token) return;
+
+      try {
+        const sessionService = request.container.resolve("sessionService");
+        const result = await sessionService.verify(token);
+        request.locals.user = {
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          permissions: result.permissions,
+        };
+      } catch {
+        request.locals.user = null;
+      }
+    });
 
     await super.register(context);
   }

@@ -33,6 +33,12 @@ export class DevelopmentServer extends BaseServer {
           ],
           // If using Vite in dev mode, you might need 'unsafe-inline' for style-src HMR
           "style-src": ["'self'", "'unsafe-inline'"],
+          "connect-src": [
+            "'self'",
+            process.env.API_URL!,
+            "ws:",
+            "wss:",
+          ],
         },
       }),
     );

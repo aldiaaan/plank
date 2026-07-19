@@ -30,6 +30,40 @@ export type GetPingResponses = {
 
 export type GetPingResponse = GetPingResponses[keyof GetPingResponses];
 
+export type GetUsersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        search?: string;
+        limit?: number;
+        offset?: number;
+    };
+    url: '/users';
+};
+
+export type GetUsersResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            items: Array<{
+                id: string;
+                email: string;
+                name: string;
+                createdAt: string;
+                updatedAt: string;
+            }>;
+            total: number;
+            limit: number;
+            offset: number;
+        };
+    };
+};
+
+export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
+
 export type PostAuthLoginData = {
     body: {
         email: string;
@@ -46,6 +80,8 @@ export type PostAuthLoginErrors = {
      */
     401: {
         message: string;
+        code: string;
+        statusCode: number;
     };
 };
 
@@ -56,7 +92,8 @@ export type PostAuthLoginResponses = {
      * Default Response
      */
     200: {
-        user: {
+        message: string;
+        result: {
             id: string;
             email: string;
             name: string;
@@ -67,3 +104,63 @@ export type PostAuthLoginResponses = {
 };
 
 export type PostAuthLoginResponse = PostAuthLoginResponses[keyof PostAuthLoginResponses];
+
+export type PostAuthSignoutData = {
+    body: {
+        cookie: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/auth/signout';
+};
+
+export type PostAuthSignoutResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: unknown;
+    };
+};
+
+export type PostAuthSignoutResponse = PostAuthSignoutResponses[keyof PostAuthSignoutResponses];
+
+export type PostAuthVerifyData = {
+    body: {
+        cookie: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/auth/verify';
+};
+
+export type PostAuthVerifyErrors = {
+    /**
+     * Default Response
+     */
+    401: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+};
+
+export type PostAuthVerifyError = PostAuthVerifyErrors[keyof PostAuthVerifyErrors];
+
+export type PostAuthVerifyResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            id: string;
+            email: string;
+            name: string;
+            permissions: Array<'write:all' | 'read:all'>;
+        };
+    };
+};
+
+export type PostAuthVerifyResponse = PostAuthVerifyResponses[keyof PostAuthVerifyResponses];

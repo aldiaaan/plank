@@ -30,7 +30,7 @@ const HTTP_METHODS = [
   "OPTIONS",
 ] as const;
 
-export function defineRoute<
+export function route<
   RouteGeneric extends RouteGenericInterface = RouteGenericInterface,
   ContextConfig = ContextConfigDefault,
   const Schema extends FastifySchema = FastifySchema,
