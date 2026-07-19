@@ -35,36 +35,51 @@ export class WidgetsModule extends ServerModule {
 
 Export HTTP method names (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, …). Prefer `route({ schema, handler })` from `ServerModule`.
 
-```ts
-// modules/widgets/routes/index.ts → GET /widgets
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
+**Every endpoint must ship with OpenAPI docs** (via `@fastify/swagger` / `/openapi.json` / `/reference`). Incomplete schemas or missing tags are not acceptable — codegen and the API reference both depend on this.
 
-export const GET = route({
+Required on every route `schema`:
+
+| Field | Purpose |
+| ----- | ------- |
+| `tags` | Group the operation (e.g. `["Users"]`, `["Auth"]`, `["Sessions"]`). Use the resource name; keep tags consistent across the module. |
+| `summary` | Short title shown in the reference UI. |
+| `description` | What the endpoint does, important query/body behavior, and side effects (cookies, auth, etc.). |
+| request schemas | `body` / `querystring` / `params` as needed — typed with TypeBox (`format`, `minLength`, defaults, etc.). |
+| `response` | Every status the handler can return (`200`/`201`, plus error statuses with `ErrorResponse`). Prefer `SuccessResponse(...)`. |
+
+Add `description` on important TypeBox fields when the name alone is unclear.
+
+Example (`POST /users` — see `modules/user/routes/index.ts`):
+
+```ts
+export const POST = route({
   schema: {
-    querystring: Type.Object({
-      /* … */
+    tags: ["Users"],
+    summary: "Create user",
+    description:
+      "Creates a user account with the given role. Returns 409 if the email is already taken, 400 if the role does not exist.",
+    body: Type.Object({
+      name: Type.String({ minLength: 1, description: "Display name" }),
+      email: Type.String({ format: "email" }),
+      password: Type.String({ minLength: 8 }),
+      roleId: Type.String({
+        format: "uuid",
+        description: "Existing role id from GET /roles",
+      }),
     }),
     response: {
-      200: SuccessResponse(
-        Type.Object({
-          /* … */
-        }),
-      ),
+      201: SuccessResponse(UserItem),
+      400: ErrorResponse,
+      409: ErrorResponse,
     },
   },
   handler: async (request, reply) => {
-    const db = request.container.resolve("db");
     // …
-    return reply.send({
-      message: "ok",
-      result: {
-        /* … */
-      },
-    });
   },
 });
 ```
+
+List endpoints follow the same pattern (tags/summary/description + querystring + `200` response), e.g. `GET /users` with `search`, filters, `sorting`, `limit`, `offset`.
 
 Filename → path (appended to `routePrefix()`):
 
@@ -202,6 +217,45 @@ pnpm --filter @plank/client codegen
 - `request.container` — request-scoped Awilix scope (created `onRequest`, disposed `onResponse`)
 - `request.locals.user` — set by `AuthModule` when a session cookie verifies (`null` otherwise)
 - Root `context.container` — use only during `register()` (bootstrap), not inside handlers
+
+## Web app conventions (`plank-web`)
+
+### Forms
+
+- Use **react-hook-form** for every form or controlled input surface (create/edit pages, dialogs, login, settings, etc.).
+- Do not manage form field state with ad-hoc `useState` / uncontrolled inputs when RHF fits.
+
+### Remote data
+
+- Use **TanStack React Query** (`useQuery` / `useMutation`) for all remote data.
+- Prefer the generated options/mutation helpers from `@plank/client` (e.g. `getUsersOptions`, `postAuthLoginMutation`) — do not hand-roll `fetch` wrappers or API clients.
+- Do **not** create custom data hooks (`useUsers`, `useCreateUser`, …) unless it is really necessary (shared non-trivial orchestration used in several places). Prefer calling `useQuery` / `useMutation` with the generated helpers directly in the page or component.
+
+### Generated API client (`@plank/client`)
+
+- After adding or changing server routes/schemas, regenerate the client:
+
+```bash
+pnpm --filter @plank/client codegen
+```
+
+- Wire the same modules in `apps/plank-api/src/index.ts` and `packages/plank-client/bin/codegen.ts` so OpenAPI matches.
+- Import types and SDK helpers from `@plank/client` only — never duplicate endpoint URLs, request shapes, or response types by hand.
+- Authenticated browser calls must pass `credentials: "include"`.
+
+### Navigation
+
+- Always pass `viewTransition` on every React Router `Link` / `NavLink` (and any `Link` used via `asChild`).
+
+```tsx
+<Link to="/dashboard/users" viewTransition>
+  Cancel
+</Link>
+
+<NavLink to={item.url} viewTransition>
+  {item.title}
+</NavLink>
+```
 
 ## CRUD data tables (web)
 
@@ -347,10 +401,11 @@ Reset `page` to `1` when filters or `perPage` change.
 Pattern (when adding write endpoints):
 
 1. Add `POST` / `PATCH` / `DELETE` routes on the resource module.
-2. Regenerate `@plank/client`.
-3. Use `useMutation({ ...postXMutation() })` (or patch/delete equivalents).
-4. On success: `queryClient.invalidateQueries({ queryKey: getXQueryKey(...) })` (or the list query key you used).
-5. Keep dialogs/forms outside `DataTable`; pass row actions via column `cell` (e.g. edit/delete buttons).
+2. Regenerate `@plank/client` (`pnpm --filter @plank/client codegen`).
+3. Use `useMutation({ ...postXMutation() })` (or patch/delete equivalents) — no custom fetch hooks.
+4. Build the form with **react-hook-form**; wire `handleSubmit` to the mutation.
+5. On success: `queryClient.invalidateQueries({ queryKey: getXQueryKey(...) })` (or the list query key you used).
+6. Keep dialogs/forms outside `DataTable`; pass row actions via column `cell` (e.g. edit/delete buttons).
 
 Do not put mutation logic inside `common/tables/*` — only columns and filterables live there.
 

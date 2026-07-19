@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { getPing, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify } from '../sdk.gen';
-import type { GetPingData, GetPingResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse } from '../types.gen';
+import { getPing, getRoles, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify, postUsers } from '../sdk.gen';
+import type { GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -125,6 +125,20 @@ export const getUsersInfiniteOptions = (options?: Options<GetUsersData>) => {
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const postUsersMutation = (options?: Partial<Options<PostUsersData>>): UseMutationOptions<PostUsersResponse, PostUsersError, Options<PostUsersData>> => {
+    const mutationOptions: UseMutationOptions<PostUsersResponse, PostUsersError, Options<PostUsersData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postUsers({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const getSessionsQueryKey = (options?: Options<GetSessionsData>) => createQueryKey('getSessions', options);
 
 export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryOptions<GetSessionsResponse, DefaultError, GetSessionsResponse, ReturnType<typeof getSessionsQueryKey>>({
@@ -166,6 +180,21 @@ export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) =
     });
     return opts as Omit<typeof opts, 'initialData'>;
 };
+
+export const getRolesQueryKey = (options?: Options<GetRolesData>) => createQueryKey('getRoles', options);
+
+export const getRolesOptions = (options?: Options<GetRolesData>) => queryOptions<GetRolesResponse, DefaultError, GetRolesResponse, ReturnType<typeof getRolesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getRoles({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRolesQueryKey(options)
+});
 
 export const postAuthLoginMutation = (options?: Partial<Options<PostAuthLoginData>>): UseMutationOptions<PostAuthLoginResponse, PostAuthLoginError, Options<PostAuthLoginData>> => {
     const mutationOptions: UseMutationOptions<PostAuthLoginResponse, PostAuthLoginError, Options<PostAuthLoginData>> = {

@@ -6,8 +6,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "react-router";
 import "@plank/ui/styles.css";
+import { Progress } from "@plank/ui/components/progress";
 import { Toaster } from "@plank/ui/components/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
@@ -40,8 +42,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const navigation = useNavigation();
+  const isPageLoading = navigation.state === "loading";
+
   return (
     <NuqsAdapter>
+      {isPageLoading ? (
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-50">
+          <Progress
+            indeterminate
+            className="h-0.5 rounded-none bg-transparent"
+            aria-label="Loading page"
+          />
+        </div>
+      ) : null}
       <Outlet />
     </NuqsAdapter>
   );

@@ -84,29 +84,32 @@ export function Scrollable(props: ScrollableProps) {
 
   return (
     <div className={cn("relative", className)}>
-      <div
-        data-slot="scrollable"
-        ref={registerScrollRef}
-        onScroll={handleScroll}
-        style={
-          {
-            "--shadow--bottom-offset": `${shadowOffsetBottom}px`,
-            "--shadow--top-offset": `${shadowOffsetTop}px`,
-          } as React.CSSProperties
-        }
-        className={cn(
-          "h-full overflow-y-auto",
-          "before:content-[''] before:absolute before:top-[var(--shadow--top-offset)] before:left-0 before:right-0",
-          "before:h-6 before:bg-gradient-to-b before:from-black/10 before:to-transparent",
-          "before:pointer-events-none before:transition-opacity",
-          "after:content-[''] after:absolute after:bottom-[var(--shadow--bottom-offset)] after:left-0 after:right-0",
-          "after:h-12 after:bg-gradient-to-t after:from-black/10 after:to-transparent",
-          "after:pointer-events-none after:transition-opacity",
-          isScrolled ? "before:opacity-100" : "before:opacity-0",
-          isAtBottom ? "after:opacity-0" : "after:opacity-100",
-        )}
-      >
-        {children}
+      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+        <div
+          data-slot="scrollable"
+          ref={registerScrollRef}
+          onScroll={handleScroll}
+          className="h-full overflow-auto"
+        >
+          {children}
+        </div>
+
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-x-0 z-30 h-6 bg-gradient-to-b from-black/10 to-transparent transition-opacity",
+            isScrolled ? "opacity-100" : "opacity-0",
+          )}
+          style={{ top: `${shadowOffsetTop}px` }}
+        />
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-x-0 z-30 h-12 bg-gradient-to-t from-black/10 to-transparent transition-opacity",
+            isAtBottom ? "opacity-0" : "opacity-100",
+          )}
+          style={{ bottom: `${shadowOffsetBottom}px` }}
+        />
       </div>
     </div>
   );

@@ -72,6 +72,58 @@ export type GetUsersResponses = {
 
 export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
 
+export type PostUsersData = {
+    body: {
+        name: string;
+        email: string;
+        password: string;
+        roleId: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/users';
+};
+
+export type PostUsersErrors = {
+    /**
+     * Default Response
+     */
+    400: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+    /**
+     * Default Response
+     */
+    409: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+};
+
+export type PostUsersError = PostUsersErrors[keyof PostUsersErrors];
+
+export type PostUsersResponses = {
+    /**
+     * Default Response
+     */
+    201: {
+        message: string;
+        result: {
+            id: string;
+            email: string;
+            name: string;
+            permissions: Array<'write:all' | 'read:all'>;
+            createdAt: string;
+            updatedAt: string;
+        };
+    };
+};
+
+export type PostUsersResponse = PostUsersResponses[keyof PostUsersResponses];
+
 export type GetSessionsData = {
     body?: never;
     path?: never;
@@ -115,6 +167,33 @@ export type GetSessionsResponses = {
 };
 
 export type GetSessionsResponse = GetSessionsResponses[keyof GetSessionsResponses];
+
+export type GetRolesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/roles';
+};
+
+export type GetRolesResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            items: Array<{
+                id: string;
+                name: string;
+                description: string | unknown;
+                isSystem: boolean;
+                permissions: Array<'write:all' | 'read:all'>;
+            }>;
+        };
+    };
+};
+
+export type GetRolesResponse = GetRolesResponses[keyof GetRolesResponses];
 
 export type PostAuthLoginData = {
     body: {

@@ -2,6 +2,7 @@ import {
   DocumentationModule,
   HealthcheckModule,
   PlankServer,
+  RolesModule,
   SessionsModule,
   UserModule,
 } from "@plank/server";
@@ -15,6 +16,7 @@ async function main() {
       new HealthcheckModule(),
       new UserModule(),
       new SessionsModule(),
+      new RolesModule(),
     ],
   });
 

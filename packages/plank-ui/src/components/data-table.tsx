@@ -254,13 +254,14 @@ export function DataTableContent(props: DataTableContentProps) {
 
   return (
     <DataTableContext.Provider value={{ table }}>
-      <div className={cn("border", className)}>
+      <div className={cn(className)}>
         <Table>
-          <TableHeader>
+          <TableHeader className="[&_tr]:border-b-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
                 className={cn(
+                  "border-b-0 hover:bg-background",
                   border && "[&_th]:border-r [&_th:last-child]:border-0",
                 )}
               >
@@ -274,7 +275,7 @@ export function DataTableContent(props: DataTableContentProps) {
                           : undefined
                       }
                       className={cn(
-                        "sticky top-0 z-20 bg-background tracking-tight select-none",
+                        "sticky top-0 z-20 bg-background tracking-tight select-none shadow-[inset_0_-1px_0_0_var(--border)]",
                         canSort && "cursor-pointer",
                       )}
                       key={header.id}

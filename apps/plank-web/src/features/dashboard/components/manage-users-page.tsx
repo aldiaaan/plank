@@ -18,6 +18,8 @@ import {
   userManagementColumns,
   userManagementFilterables,
 } from "../../../common/tables/users-management";
+import { Button } from "@plank/ui/components/button";
+import { Link } from "react-router";
 
 function filtersToQuery(filters: DataTableFilterValue[]) {
   const search = filters.find((filter) => filter.id === "search")?.value?.eq;
@@ -68,14 +70,23 @@ export default function ManageUsersPage() {
   return (
     <TooltipProvider>
       <ScrollableProvider>
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
-          <div>
-            <h1 className="text-xl font-semibold font-heading tracking-tight">
-              Manage Users
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Search and filter users by permissions and registration date.
-            </p>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+          <div className="flex shrink-0 items-center justify-between">
+            <div className="flex-1">
+              <h1 className="text-xl font-semibold font-heading tracking-tight">
+                Manage Users
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Search and filter users by permissions and registration date.
+              </p>
+            </div>
+            <div>
+              <Button asChild>
+                <Link to="/dashboard/users/create" viewTransition>
+                  Create User
+                </Link>
+              </Button>
+            </div>
           </div>
 
           <DataTable.Root
@@ -84,40 +95,46 @@ export default function ManageUsersPage() {
             sorting={sorting}
             onSortingChange={setSorting}
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <DataTable.FilterButton
-                filterables={userManagementFilterables}
-                value={filters}
-                onChange={(next) => {
-                  void setFilters(next);
-                  if (page !== 1) {
-                    void setPagination({ pageIndex: 1 });
-                  }
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <DataTable.FilterButton
+                  filterables={userManagementFilterables}
+                  value={filters}
+                  onChange={(next) => {
+                    void setFilters(next);
+                    if (page !== 1) {
+                      void setPagination({ pageIndex: 1 });
+                    }
+                  }}
+                />
+                <DataTable.ColumnSettings />
+              </div>
+
+              <Scrollable
+                className="min-h-0 flex-1 rounded-lg border"
+                shadowOffsetTop={48}
+              >
+                <DataTable.Content
+                  isLoading={isLoading || isFetching}
+                  border
+                  className="border-0"
+                />
+              </Scrollable>
+
+              <DataTable.Pagination
+                className="shrink-0"
+                page={page}
+                perPage={perPage}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={(next) => {
+                  void setPagination({ pageIndex: next });
+                }}
+                onPerPageChange={(next) => {
+                  void setPagination({ pageSize: next, pageIndex: 1 });
                 }}
               />
-              <DataTable.ColumnSettings />
             </div>
-
-            <Scrollable className="min-h-0 flex-1 rounded-lg border">
-              <DataTable.Content
-                isLoading={isLoading || isFetching}
-                border
-                className="border-0"
-              />
-            </Scrollable>
-
-            <DataTable.Pagination
-              page={page}
-              perPage={perPage}
-              total={total}
-              totalPages={totalPages}
-              onPageChange={(next) => {
-                void setPagination({ pageIndex: next });
-              }}
-              onPerPageChange={(next) => {
-                void setPagination({ pageSize: next, pageIndex: 1 });
-              }}
-            />
           </DataTable.Root>
         </div>
       </ScrollableProvider>

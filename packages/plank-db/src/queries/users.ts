@@ -1,11 +1,17 @@
 import { and, count, desc, eq, gte, ilike, inArray, lte, or, sql, type SQL } from "drizzle-orm";
-import type { DatabaseOrTransaction } from "..";
+import type { Database, DatabaseOrTransaction } from "..";
 import {
   roles,
   userRoles,
   users,
   type Permission,
 } from "../schema";
+import {
+  assignUserRole,
+  createBasicAccount,
+  createUser,
+} from "./auth";
+import { findRoleById } from "./roles";
 import { buildOrderBy, type SortInput } from "./sort";
 
 export type ListUsersOptions = {
@@ -27,12 +33,54 @@ export type ListedUser = {
   updatedAt: Date;
 };
 
+export type CreateUserAccountInput = {
+  email: string;
+  name: string;
+  passwordHash: string;
+  roleId: string;
+};
+
 const userSortColumns = {
   createdAt: users.createdAt,
   updatedAt: users.updatedAt,
   name: users.name,
   email: users.email,
 } as const;
+
+export async function createUserAccount(
+  db: Database,
+  input: CreateUserAccountInput,
+): Promise<ListedUser | "role_not_found"> {
+  const role = await findRoleById(db, input.roleId);
+  if (!role) return "role_not_found";
+
+  return db.transaction(async (tx) => {
+    const user = await createUser(tx, {
+      email: input.email,
+      name: input.name,
+    });
+
+    await createBasicAccount(tx, {
+      userId: user.id,
+      identifier: input.email,
+      credential: input.passwordHash,
+    });
+
+    await assignUserRole(tx, {
+      userId: user.id,
+      roleId: role.id,
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      permissions: role.permissions,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  });
+}
 
 export async function listUsers(
   db: DatabaseOrTransaction,

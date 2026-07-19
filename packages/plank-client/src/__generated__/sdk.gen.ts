@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetPingData, GetPingResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses } from './types.gen';
+import type { GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -22,7 +22,18 @@ export const getPing = <ThrowOnError extends boolean = false>(options?: Options<
 
 export const getUsers = <ThrowOnError extends boolean = false>(options?: Options<GetUsersData, ThrowOnError>): RequestResult<GetUsersResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetUsersResponses, unknown, ThrowOnError>({ url: '/users', ...options });
 
+export const postUsers = <ThrowOnError extends boolean = false>(options: Options<PostUsersData, ThrowOnError>): RequestResult<PostUsersResponses, PostUsersErrors, ThrowOnError> => (options.client ?? client).post<PostUsersResponses, PostUsersErrors, ThrowOnError>({
+    url: '/users',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
 export const getSessions = <ThrowOnError extends boolean = false>(options?: Options<GetSessionsData, ThrowOnError>): RequestResult<GetSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetSessionsResponses, unknown, ThrowOnError>({ url: '/sessions', ...options });
+
+export const getRoles = <ThrowOnError extends boolean = false>(options?: Options<GetRolesData, ThrowOnError>): RequestResult<GetRolesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetRolesResponses, unknown, ThrowOnError>({ url: '/roles', ...options });
 
 export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostAuthLoginData, ThrowOnError>): RequestResult<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError> => (options.client ?? client).post<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError>({
     url: '/auth/login',

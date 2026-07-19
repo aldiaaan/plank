@@ -208,7 +208,7 @@ export default function DashboardPage() {
   const submit = useSubmit();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-svh overflow-hidden">
       <AppSidebar
         user={{
           name,
@@ -220,7 +220,7 @@ export default function DashboardPage() {
           submit(null, { method: "post" });
         }}
       />
-      <SidebarInset>
+      <SidebarInset className="min-h-0 overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
@@ -256,7 +256,7 @@ export default function DashboardPage() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 pt-0">
           <Outlet />
         </div>
       </SidebarInset>

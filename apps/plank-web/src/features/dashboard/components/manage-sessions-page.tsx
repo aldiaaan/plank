@@ -66,8 +66,8 @@ export default function ManageSessionsPage() {
   return (
     <TooltipProvider>
       <ScrollableProvider>
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
-          <div>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+          <div className="shrink-0">
             <h1 className="text-xl font-semibold font-heading tracking-tight">
               Manage Sessions
             </h1>
@@ -82,40 +82,46 @@ export default function ManageSessionsPage() {
             sorting={sorting}
             onSortingChange={setSorting}
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <DataTable.FilterButton
-                filterables={sessionManagementFilterables}
-                value={filters}
-                onChange={(next) => {
-                  void setFilters(next);
-                  if (page !== 1) {
-                    void setPagination({ pageIndex: 1 });
-                  }
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <DataTable.FilterButton
+                  filterables={sessionManagementFilterables}
+                  value={filters}
+                  onChange={(next) => {
+                    void setFilters(next);
+                    if (page !== 1) {
+                      void setPagination({ pageIndex: 1 });
+                    }
+                  }}
+                />
+                <DataTable.ColumnSettings />
+              </div>
+
+              <Scrollable
+                className="min-h-0 flex-1 rounded-lg border"
+                shadowOffsetTop={48}
+              >
+                <DataTable.Content
+                  isLoading={isLoading || isFetching}
+                  border
+                  className="border-0"
+                />
+              </Scrollable>
+
+              <DataTable.Pagination
+                className="shrink-0"
+                page={page}
+                perPage={perPage}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={(next) => {
+                  void setPagination({ pageIndex: next });
+                }}
+                onPerPageChange={(next) => {
+                  void setPagination({ pageSize: next, pageIndex: 1 });
                 }}
               />
-              <DataTable.ColumnSettings />
             </div>
-
-            <Scrollable className="min-h-0 flex-1 rounded-lg border">
-              <DataTable.Content
-                isLoading={isLoading || isFetching}
-                border
-                className="border-0"
-              />
-            </Scrollable>
-
-            <DataTable.Pagination
-              page={page}
-              perPage={perPage}
-              total={total}
-              totalPages={totalPages}
-              onPageChange={(next) => {
-                void setPagination({ pageIndex: next });
-              }}
-              onPerPageChange={(next) => {
-                void setPagination({ pageSize: next, pageIndex: 1 });
-              }}
-            />
           </DataTable.Root>
         </div>
       </ScrollableProvider>
