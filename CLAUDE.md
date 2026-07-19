@@ -326,23 +326,23 @@ When adding a create/edit form inside the dashboard, match the layout and field 
 - Mark invalid fields with `data-invalid` on `Field` and `aria-invalid` on inputs
 - Use `Controller` for selects and other non-native controls
 - Actions: cancel + submit row with `ml-auto` (`outline` Cancel `Link` with `viewTransition`, primary submit)
-- On success: toast, invalidate the list query, navigate back to the related manage page
+- On success: toast, `queryClient.invalidateQueries({ queryKey: [{ _id: "getX" }] })`, navigate back to the related manage page
 - Surface mutation errors as `text-sm text-destructive` above the actions
 
-On the related manage / table page, put the create entry point in the page header (title + description on the left, primary button on the right) like `manage-users-page.tsx`:
+On the related manage / table page, put the create entry point in the page header (title + description on the left, primary button on the right) like `manage-roles-page.tsx` / `manage-users-page.tsx`:
 
 ```tsx
 <div className="flex shrink-0 items-start justify-between gap-4">
   <div>
     <h1 className="text-xl font-semibold font-heading tracking-tight">
-      Manage Users
+      Manage Roles
     </h1>
     <p className="text-sm text-muted-foreground">…</p>
   </div>
   <div>
     <Button asChild>
-      <Link to="/dashboard/users/create" viewTransition>
-        Create User
+      <Link to="/dashboard/roles/create" viewTransition>
+        Create Role
       </Link>
     </Button>
   </div>
@@ -490,32 +490,57 @@ const offset = (page - 1) * perPage;
 
 <TooltipProvider>
   <ScrollableProvider>
-    <DataTable.Root data={items} columns={columns} sorting={sorting} onSortingChange={setSorting}>
-      <DataTable.FilterButton
-        filterables={...}
-        value={filters}
-        onChange={(next) => {
-          void setFilters(next);
-          void setPagination({ pageIndex: 1 });
-        }}
-      />
-      <DataTable.ColumnSettings />
-      <Scrollable className="min-h-0 flex-1 rounded-lg border">
-        <DataTable.Content isLoading={isLoading || isFetching} border className="border-0" />
-      </Scrollable>
-      <DataTable.Pagination
-        page={page}
-        perPage={perPage}
-        total={total}
-        totalPages={totalPages}
-        onPageChange={(next) => {
-          void setPagination({ pageIndex: next });
-        }}
-        onPerPageChange={(next) => {
-          void setPagination({ pageSize: next, pageIndex: 1 });
-        }}
-      />
-    </DataTable.Root>
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+      {/* optional page header (title + create button) */}
+
+      <DataTable.Root
+        data={items}
+        columns={columns}
+        sorting={sorting}
+        onSortingChange={setSorting}
+      >
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <DataTable.FilterButton
+              filterables={...}
+              value={filters}
+              onChange={(next) => {
+                void setFilters(next);
+                if (page !== 1) {
+                  void setPagination({ pageIndex: 1 });
+                }
+              }}
+            />
+            <DataTable.ColumnSettings />
+          </div>
+
+          <Scrollable
+            className="min-h-0 flex-1 rounded-lg border"
+            shadowOffsetTop={48}
+          >
+            <DataTable.Content
+              isLoading={isLoading || isFetching}
+              border
+              className="border-0"
+            />
+          </Scrollable>
+
+          <DataTable.Pagination
+            className="shrink-0"
+            page={page}
+            perPage={perPage}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={(next) => {
+              void setPagination({ pageIndex: next });
+            }}
+            onPerPageChange={(next) => {
+              void setPagination({ pageSize: next, pageIndex: 1 });
+            }}
+          />
+        </div>
+      </DataTable.Root>
+    </div>
   </ScrollableProvider>
 </TooltipProvider>
 ```
@@ -552,7 +577,7 @@ Pattern (when adding write endpoints):
 2. Regenerate `@plank/client` (`pnpm --filter @plank/client codegen`).
 3. Use `useMutation({ ...postXMutation() })` (or patch/delete equivalents) — no custom fetch hooks.
 4. Build the form with **react-hook-form**; wire `handleSubmit` to the mutation.
-5. On success: `queryClient.invalidateQueries({ queryKey: getXQueryKey(...) })` (or the list query key you used).
+5. On success: invalidate the list with a partial key match, toast, then navigate back — e.g. `queryClient.invalidateQueries({ queryKey: [{ _id: "getUsers" }] })` (see `create-user-page.tsx` / `create-role-page.tsx`).
 6. Keep dialogs/forms outside `DataTable`; pass row actions via column `cell` (e.g. edit/delete buttons).
 
 Do not put mutation logic inside `common/tables/*` — only columns and filterables live there.
