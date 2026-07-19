@@ -5,9 +5,6 @@ import * as awilix from "awilix";
 import qs from "qs";
 import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 import { EventBusModule } from "../modules/event-bus/event-bus.module";
-import { ConnectionModule } from "../modules/connection/connection.module";
-import { AuthModule } from "../modules/auth/auth.module";
-import { SessionModule } from "../modules/session/session.module";
 import { ClientError, ServerError } from "./errors";
 
 export class PlankServer {
@@ -96,17 +93,12 @@ export class PlankServer {
       container: this.container,
     };
 
-    // SessionModule is after options.modules so DocumentationModule (swagger)
-    // is registered first and GET /sessions appears in /openapi.json.
+    // Put BackgroundJobModule in options.modules before DocumentationModule
+    // so Bull Board stays out of /openapi.json. Session/Auth after docs.
+    // DatabaseModule should be first in options.modules (registers `db`).
     for (const module of [
-      new ConnectionModule({ databaseUrl: this.options.databaseUrl }),
       new EventBusModule(),
       ...this.options.modules,
-      new SessionModule(),
-      new AuthModule({
-        initialSuperAdminEmail: this.options.superAdminEmail,
-        initialSuperAdminPassword: this.options.superAdminPassword,
-      }),
     ]) {
       this.app.log.info(`Registering module ${module.name}`);
       await module.register(context);

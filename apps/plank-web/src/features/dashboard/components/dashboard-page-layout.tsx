@@ -25,6 +25,7 @@ import {
   KeyRoundIcon,
   LogInIcon,
   ShieldIcon,
+  StepBackIcon,
   TerminalIcon,
   Users2,
   UsersIcon,
@@ -81,10 +82,16 @@ const groups = [
       },
       {
         title: "API Docs",
-        url: "http://localhost:4000/reference",
+        url: "http://localhost:4000/externals/scalar",
         icon: <BookIcon />,
         external: true, // optional if url is already http(s)
       },
+      {
+        title: "Bull Board",
+        url: "http://localhost:4000/externals/bull-board",
+        icon: <StepBackIcon />,
+        external: true, // optional if url is already http(s)
+      }
     ],
   },
   {

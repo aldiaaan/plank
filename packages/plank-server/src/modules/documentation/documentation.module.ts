@@ -4,6 +4,8 @@ import type {
   ModuleRegistrationContext,
 } from "../../server/types";
 
+const SCALAR_ROUTE_PREFIX = "/externals/scalar";
+
 export class DocumentationModule extends ServerModule {
   name = "documentation";
 
@@ -22,12 +24,24 @@ export class DocumentationModule extends ServerModule {
       },
     });
 
+    // Left public so codegen can fetch the schema without a session.
     context.app.get("/openapi.json", { schema: { hide: true } }, async () =>
       context.app.swagger(),
     );
 
-    await context.app.register(import("@scalar/fastify-api-reference"), {
-      routePrefix: "/reference",
-    });
+    await context.app.register(
+      async (scoped) => {
+        scoped.addHook("onRoute", (routeOptions) => {
+          routeOptions.config = {
+            ...routeOptions.config,
+            allow: ["read:all"],
+          };
+        });
+        await scoped.register(import("@scalar/fastify-api-reference"), {
+          routePrefix: "/",
+        });
+      },
+      { prefix: SCALAR_ROUTE_PREFIX },
+    );
   }
 }

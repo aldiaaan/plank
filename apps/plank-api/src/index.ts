@@ -1,33 +1,52 @@
 import {
+  AuthModule,
+  BackgroundJobModule,
+  DatabaseModule,
   DocumentationModule,
   HealthcheckModule,
   PlankServer,
   RolesModule,
+  SessionModule,
   UserModule,
 } from "@plank/server";
 
 async function main() {
   const modules = [];
 
-  if (process.env.NODE_ENV === "development") {
-    modules.push(
-      new DocumentationModule({
-        baseUrl: "http://localhost:4000",
-      }),
-    );
-  }
+  modules.push(
+    new DatabaseModule({
+      databaseUrl: process.env.DATABASE_URL!,
+    }),
+  );
+
+  // Before DocumentationModule so Bull Board is not included in OpenAPI.
+  modules.push(
+    new BackgroundJobModule({
+      redisUrl: process.env.REDIS_URL!,
+    }),
+  );
+
+  modules.push(
+    new DocumentationModule({
+      baseUrl: process.env.API_BASE_URL ?? "http://localhost:4000",
+    }),
+  );
 
   modules.push(new HealthcheckModule());
   modules.push(new UserModule());
   modules.push(new RolesModule());
+  modules.push(new SessionModule());
+  modules.push(
+    new AuthModule({
+      initialSuperAdminEmail: process.env.SUPERADMIN_EMAIL,
+      initialSuperAdminPassword: process.env.SUPERADMIN_PASSWORD,
+    }),
+  );
 
   const server = new PlankServer({
     port: 4000,
     modules,
-    databaseUrl: process.env.DATABASE_URL!,
     allowedOrigin: process.env.ALLOWED_ORIGIN ?? false,
-    superAdminEmail: process.env.SUPERADMIN_EMAIL,
-    superAdminPassword: process.env.SUPERADMIN_PASSWORD,
   });
 
   await server.start();

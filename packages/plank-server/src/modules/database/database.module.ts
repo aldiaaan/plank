@@ -1,16 +1,16 @@
 import { asValue } from "awilix";
+import { initializeDatabase } from "@plank/db";
 import { ServerModule } from "../../server/module";
 import type { ModuleRegistrationContext } from "../../server/types";
-import { initializeDatabase } from "@plank/db";
 
-export type ConnectionModuleOptions = {
+export type DatabaseModuleOptions = {
   databaseUrl: string;
 };
 
-export class ConnectionModule extends ServerModule {
-  name = "connection";
+export class DatabaseModule extends ServerModule {
+  name = "database";
 
-  constructor(private readonly options: ConnectionModuleOptions) {
+  constructor(private readonly options: DatabaseModuleOptions) {
     super();
   }
 

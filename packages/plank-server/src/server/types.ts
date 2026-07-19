@@ -13,9 +13,9 @@ import type {
 } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { Database, Permission } from "@plank/db";
+import type Redis from "ioredis";
 import type { ServerModule } from "./module";
 import type { EventBus } from "../modules/event-bus/event-bus.module";
-import type { ConnectionModuleOptions } from "../modules/connection/connection.module";
 import { SessionService } from "@/modules/session/session.service";
 
 export type RequestUser = {
@@ -32,10 +32,7 @@ export type RequestLocals = {
 export type PlankServerOptions = {
   port: number;
   modules: ServerModule[];
-  databaseUrl: ConnectionModuleOptions["databaseUrl"];
   allowedOrigin?: string | string[] | boolean;
-  superAdminEmail?: string;
-  superAdminPassword?: string;
 };
 
 export type PlankFastifyInstance = FastifyInstance<
@@ -86,6 +83,7 @@ export type ModuleRegistrationCradle = {
   db: Database;
   eventBus: EventBus;
   sessionService: SessionService;
+  redis: Redis;
 };
 export type ModuleRegistrationContext = {
   app: PlankFastifyInstance;

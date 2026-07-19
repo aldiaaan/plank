@@ -50,8 +50,8 @@ pnpm exec turbo run dev codegen:watch \
 | Service | URL |
 | --- | --- |
 | API | http://localhost:4000 |
-| API reference (dev) | http://localhost:4000/reference |
-| OpenAPI JSON (dev) | http://localhost:4000/openapi.json |
+| API reference | http://localhost:4000/externals/scalar |
+| OpenAPI JSON | http://localhost:4000/openapi.json |
 | Web | (see `@plank/web` Vite / React Router ports) |
 | pgweb | http://localhost:8081 |
 
@@ -73,6 +73,7 @@ Wire env on the API (extend `.env` from `.env.example` as needed):
 
 ```bash
 DATABASE_URL=postgres://plank:plank@localhost:5432/plank?sslmode=disable
+REDIS_URL=redis://:plank@localhost:6379
 SUPERADMIN_EMAIL=admin@example.com
 SUPERADMIN_PASSWORD=change-me
 ```

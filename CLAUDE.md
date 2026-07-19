@@ -15,6 +15,10 @@ packages/plank-server/src/modules/<name>/
     index.ts                # → routePrefix() + ""
     $id.ts                  # → routePrefix() + "/:id"
     nested.$slug.ts         # → routePrefix() + "/nested/:slug"
+  worker/                   # optional BullMQ jobs (see Background jobs)
+    jobs/                   # job payload types (TypeScript only)
+    queues/                 # *.queue.ts — default-export BaseQueue subclasses
+    processors/             # *.processor.ts — default-export BaseProcessor subclasses
   *.service.ts              # optional DI services
 ```
 
@@ -29,7 +33,7 @@ export class WidgetModule extends ServerModule {
 }
 ```
 
-Module naming is **singular**, not plural: folder, `name`, and class (`user` / `UserModule`, not `users` / `UsersModule`). `routePrefix()` may still use a plural collection path (e.g. `/users`). `name` drives `routesDir()` → `modules/<name>/routes/`. Missing `routes/` is fine (DI-only modules like `connection` / `event-bus`).
+Module naming is **singular**, not plural: folder, `name`, and class (`user` / `UserModule`, not `users` / `UsersModule`). `routePrefix()` may still use a plural collection path (e.g. `/users`). `name` drives `routesDir()` → `modules/<name>/routes/`. Missing `routes/` is fine (DI-only modules like `database` / `event-bus` / `background-job`).
 ### Route files
 
 Export HTTP method names (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, …). Prefer `route({ schema, handler })` from `ServerModule`.
@@ -50,7 +54,7 @@ export const GET = route({
 });
 ```
 
-**Every endpoint must ship with OpenAPI docs** (via `@fastify/swagger` / `/openapi.json` / `/reference`). Incomplete schemas or missing tags are not acceptable — codegen and the API reference both depend on this.
+**Every endpoint must ship with OpenAPI docs** (via `@fastify/swagger` / `/openapi.json` / `/externals/scalar`). Incomplete schemas or missing tags are not acceptable — codegen and the API reference both depend on this.
 
 Required on every route `schema`:
 
@@ -109,13 +113,10 @@ Filename → path (appended to `routePrefix()`):
 
 `PlankServer.start()` always registers in this order:
 
-1. `ConnectionModule` — DB (`request.container.resolve("db")`)
-2. `EventBusModule`
-3. **`options.modules`** — app modules (`DocumentationModule`, `UserModule`, `RolesModule`, …)
-4. `SessionModule` — cookies + `sessionService` + `GET /sessions`
-5. `AuthModule` — `/auth/*` + populates `request.locals.user`
+1. `EventBusModule`
+2. **`options.modules`** — app modules (`DatabaseModule`, `BackgroundJobModule`, `DocumentationModule`, `UserModule`, `RolesModule`, `SessionModule`, `AuthModule`, …)
 
-**OpenAPI / codegen:** `@fastify/swagger` is registered inside `DocumentationModule`. Only routes registered **after** that module appear in `/openapi.json`. Put list/CRUD modules in `options.modules` (after docs). `SessionModule` is built-in but registered **after** `options.modules` so its `/sessions` routes still appear in the OpenAPI doc when `DocumentationModule` is first in the list.
+**OpenAPI / codegen:** `@fastify/swagger` is registered inside `DocumentationModule`. Only routes registered **after** that module appear in `/openapi.json`. Put list/CRUD modules (and `SessionModule` / `AuthModule`) in `options.modules` after docs. Register `DatabaseModule` first (provides `db`). Register `BackgroundJobModule` **before** `DocumentationModule` so Bull Board stays out of the OpenAPI doc. Register `SessionModule` before `AuthModule` (`AuthModule` resolves `sessionService`). Codegen can omit `BackgroundJobModule` (no OpenAPI surface; avoids needing Redis).
 
 ### `register(context)`
 
@@ -139,7 +140,7 @@ async register(context: ModuleRegistrationContext) {
 Rules:
 
 - Call `super.register(context)` **last** when the module has HTTP routes.
-- DI-only modules (`ConnectionModule`, `EventBusModule`) skip `super.register`.
+- DI-only modules (`DatabaseModule`, `EventBusModule`, `BackgroundJobModule`) skip `super.register`.
 - Prefer registering dependencies before routes so handlers can resolve them immediately.
 - `context.app` is the Fastify instance; `context.container` is the root Awilix container.
 
@@ -156,7 +157,7 @@ Rules:
 | `asClass(X).singleton()` | One shared instance for the process (`eventBus`)  |
 
 ```ts
-// connection.module.ts — value
+// database.module.ts — value
 context.container.register({
   db: asValue(db),
 });
@@ -210,6 +211,7 @@ export type ModuleRegistrationCradle = {
   db: Database;
   eventBus: EventBus;
   sessionService: SessionService;
+  redis: Redis;
   // widgetService: WidgetService;
 };
 ```
@@ -270,27 +272,48 @@ export { RolesModule } from "./modules/roles/roles.module";
 ```
 
 3. If you add a service, register it in `register()` and add the key to `ModuleRegistrationCradle`.
-4. Register the module in `apps/plank-api/src/index.ts` (after `DocumentationModule` in development so routes appear in Swagger):
+4. Register the module in `apps/plank-api/src/index.ts` (after `DocumentationModule` so routes appear in Swagger):
 
 ```ts
 import {
+  AuthModule,
+  BackgroundJobModule,
+  DatabaseModule,
   DocumentationModule,
   HealthcheckModule,
   PlankServer,
   RolesModule,
+  SessionModule,
   // …other modules
 } from "@plank/server";
 
 const modules = [];
 
-if (process.env.NODE_ENV === "development") {
-  modules.push(
-    new DocumentationModule({ baseUrl: "http://localhost:4000" }),
-  );
-}
+modules.push(
+  new DatabaseModule({
+    databaseUrl: process.env.DATABASE_URL!,
+  }),
+);
+
+modules.push(
+  new BackgroundJobModule({
+    redisUrl: process.env.REDIS_URL!,
+  }),
+);
+
+modules.push(
+  new DocumentationModule({ baseUrl: "http://localhost:4000" }),
+);
 
 modules.push(new HealthcheckModule());
 modules.push(new RolesModule()); // ← add here
+modules.push(new SessionModule());
+modules.push(
+  new AuthModule({
+    initialSuperAdminEmail: process.env.SUPERADMIN_EMAIL,
+    initialSuperAdminPassword: process.env.SUPERADMIN_PASSWORD,
+  }),
+);
 
 const server = new PlankServer({
   port: 4000,
@@ -299,13 +322,19 @@ const server = new PlankServer({
 });
 ```
 
-5. Mirror the same module in `packages/plank-client/bin/codegen.ts`:
+5. Mirror the same module in `packages/plank-client/bin/codegen.ts` (you may omit `BackgroundJobModule` there):
 
 ```ts
 modules: [
+  new DatabaseModule({
+    databaseUrl:
+      process.env.DATABASE_URL ?? "postgres://localhost:5432/plank",
+  }),
   new DocumentationModule({ baseUrl: "http://localhost:4000" }),
   new HealthcheckModule(),
   new RolesModule(), // ← same order / set as plank-api
+  new SessionModule(),
+  new AuthModule({}),
   // …
 ],
 ```
@@ -316,13 +345,109 @@ modules: [
 pnpm --filter @plank/client codegen
 ```
 
-Built-in modules (`ConnectionModule`, `EventBusModule`, `SessionModule`, `AuthModule`) are registered inside `PlankServer.start()` — do not push those into `options.modules`. App feature modules (`UserModule`, `RolesModule`, …) always go in `options.modules`.
+Built-in modules (`EventBusModule`) are registered inside `PlankServer.start()` — do not push those into `options.modules`. App feature modules (`DatabaseModule`, `BackgroundJobModule`, `UserModule`, `RolesModule`, `SessionModule`, `AuthModule`, …) always go in `options.modules`.
+
+### Background jobs (BullMQ)
+
+`BackgroundJobModule` lives in `options.modules`. It connects to Redis (`redisUrl` on the module), discovers queues/processors under every feature module, starts BullMQ workers, and shuts them down gracefully on Fastify `onClose` (workers → queues → Redis). Register it **before** `DocumentationModule` so Bull Board is not swept into OpenAPI.
+
+**Layout per feature module** (optional — omit `worker/` if the module has no jobs):
+
+```
+packages/plank-server/src/modules/<name>/worker/
+  jobs/          # TypeScript job payload types (not loaded at runtime)
+  queues/        # *.queue.ts — default export extends BaseQueue
+  processors/    # *.processor.ts — default export extends BaseProcessor
+```
+
+Discovery walks `modules/*/worker/queues/**/*.queue.{ts,js}` and `modules/*/worker/processors/**/*.processor.{ts,js}` via `import(pathToFileURL(...))` (no `eval`). Files must `export default` the class.
+
+**Job types** (`worker/jobs/`):
+
+```ts
+import type { BaseJob } from "@plank/server";
+
+export interface SendWelcomeEmailJob extends BaseJob {
+  name: "send-welcome-email";
+  userId: string;
+  email: string;
+}
+
+export interface SendReminderEmailJob extends BaseJob {
+  name: "send-reminder-email";
+  userId: string;
+}
+```
+
+**Queue** (`worker/queues/email.queue.ts`) — parameterize with a union of jobs that share the queue:
+
+```ts
+import { BaseQueue } from "@plank/server";
+import type {
+  SendReminderEmailJob,
+  SendWelcomeEmailJob,
+} from "../jobs/send-welcome-email.job";
+
+export default class EmailQueue extends BaseQueue<
+  SendWelcomeEmailJob | SendReminderEmailJob
+> {
+  constructor() {
+    super("email"); // BullMQ queue name
+  }
+}
+```
+
+**Processor** (`worker/processors/send-welcome-email.processor.ts`):
+
+```ts
+import type { Job } from "bullmq";
+import { BaseProcessor } from "@plank/server";
+import type { SendWelcomeEmailJob } from "../jobs/send-welcome-email.job";
+
+export default class SendWelcomeEmailProcessor extends BaseProcessor<SendWelcomeEmailJob> {
+  readonly name = "send-welcome-email"; // must match job.name
+
+  async handle(job: Job<Omit<SendWelcomeEmailJob, "name">>) {
+    // …
+  }
+}
+```
+
+**Dispatch** from a route or service (after `BackgroundJobModule` has registered Redis). Pass the full job object (including `name`); the queue union types the payload:
+
+```ts
+const queue = new EmailQueue();
+
+await queue.dispatch({
+  name: "send-welcome-email",
+  userId: user.id,
+  email: user.email,
+});
+
+await queue.dispatch({
+  name: "send-reminder-email",
+  userId: user.id,
+});
+```
+
+You can also pin a single job type: `queue.dispatch<SendWelcomeEmailJob>({ … })`.
+
+`BaseQueue` dedupes by queue name — constructing `new EmailQueue()` again reuses the same BullMQ `Queue` instance.
+
+**Bull Board:** UI mounts at `/externals/bull-board` by default (`config.allow: ["read:all"]`). Override with `bullBoard` on `BackgroundJobModule` options (`false` to disable, or `{ prefix: "/admin/queues" }`).
+
+**Scalar:** UI mounts at `/externals/scalar` via `DocumentationModule` (`config.allow: ["read:all"]`). `/openapi.json` stays public so codegen can fetch the schema without a session.
+
+**Env:** set `REDIS_URL` with the Redis password (see `apps/plank-api/.env.example`, e.g. `redis://:plank@localhost:6379`). Redis is provided by `docker-compose.yml` (`--requirepass plank`, host `redis.internal` / localhost:6379).
+
+**DI:** `request.container.resolve("redis")` returns the shared `ioredis` client (`maxRetriesPerRequest: null` for BullMQ).
 
 ### Request context
 
 - `request.container` — request-scoped Awilix scope (created `onRequest`, disposed `onResponse`)
 - `request.locals.user` — set by `AuthModule` when a session cookie verifies (`null` otherwise); includes `permissions: Permission[]`
 - `request.routeOptions.config.allow` — optional `Permission[]` declared on the route (see Route files); not enforced yet
+- `request.container.resolve("redis")` — shared ioredis client from `BackgroundJobModule`
 - Root `context.container` — use only during `register()` (bootstrap), not inside handlers
 
 ## Web app conventions (`plank-web`)

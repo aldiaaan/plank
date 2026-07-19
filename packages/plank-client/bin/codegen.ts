@@ -1,8 +1,11 @@
 import {
+  AuthModule,
+  DatabaseModule,
   DocumentationModule,
   HealthcheckModule,
   PlankServer,
   RolesModule,
+  SessionModule,
   UserModule,
 } from "@plank/server";
 import { createClient } from "@hey-api/openapi-ts";
@@ -10,15 +13,19 @@ import { createClient } from "@hey-api/openapi-ts";
 async function main() {
   const server = new PlankServer({
     port: 10000,
-    // OpenAPI-only bootstrap — ConnectionModule needs a URL, but codegen
-    // never queries the database.
-    databaseUrl:
-      process.env.DATABASE_URL ?? "postgres://localhost:5432/plank",
+    // OpenAPI-only bootstrap — DatabaseModule needs a URL, but codegen
+    // never queries the database. BackgroundJobModule is omitted (no Redis).
     modules: [
+      new DatabaseModule({
+        databaseUrl:
+          process.env.DATABASE_URL ?? "postgres://localhost:5432/plank",
+      }),
       new DocumentationModule({ baseUrl: "http://localhost:4000" }),
       new HealthcheckModule(),
       new UserModule(),
       new RolesModule(),
+      new SessionModule(),
+      new AuthModule({}),
     ],
   });
 

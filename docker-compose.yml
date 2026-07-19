@@ -31,9 +31,27 @@ services:
       plank:
         aliases:
           - postgres.internal
+  redis:
+    container_name: plank-redis
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass plank
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "plank", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      plank:
+        aliases:
+          - redis.internal
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   plank:
