@@ -10,6 +10,10 @@ import { createClient } from "@hey-api/openapi-ts";
 async function main() {
   const server = new PlankServer({
     port: 10000,
+    // OpenAPI-only bootstrap — ConnectionModule needs a URL, but codegen
+    // never queries the database.
+    databaseUrl:
+      process.env.DATABASE_URL ?? "postgres://localhost:5432/plank",
     modules: [
       new DocumentationModule({ baseUrl: "http://localhost:4000" }),
       new HealthcheckModule(),
