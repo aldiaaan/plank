@@ -1,4 +1,16 @@
-import { and, count, desc, eq, gt, gte, ilike, lte, or, type SQL } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  lte,
+  or,
+  type SQL,
+} from "drizzle-orm";
 import type { DatabaseOrTransaction } from "..";
 import {
   roles,
@@ -12,6 +24,7 @@ import { buildOrderBy, type SortInput } from "./sort";
 
 export type ListSessionsOptions = {
   search?: string;
+  userIds?: string[];
   createdAtGte?: string;
   createdAtLte?: string;
   expiresAtGte?: string;
@@ -61,6 +74,10 @@ export async function listSessions(
       ilike(sessions.id, pattern),
     );
     if (searchFilter) filters.push(searchFilter);
+  }
+
+  if (options.userIds?.length) {
+    filters.push(inArray(sessions.userId, options.userIds));
   }
 
   if (options.createdAtGte) {

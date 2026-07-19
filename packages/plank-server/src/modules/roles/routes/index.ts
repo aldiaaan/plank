@@ -1,12 +1,26 @@
-import { listRoles } from "@plank/db/queries/roles";
+import { createRole, listRoles } from "@plank/db/queries/roles";
 import type { Permission } from "@plank/db";
 import { Type } from "typebox";
 import { route } from "../../../server/module";
+import { ErrorResponse } from "../../../server/errors";
 import { SuccessResponse } from "../../../server/responses";
+import { RoleNameAlreadyTakenError } from "../errors";
 
 const PermissionSchema = Type.Union([
   Type.Literal("write:all"),
   Type.Literal("read:all"),
+  Type.Literal("admin:create:users"),
+  Type.Literal("admin:read:users"),
+  Type.Literal("admin:update:users"),
+  Type.Literal("admin:delete:users"),
+  Type.Literal("admin:create:roles"),
+  Type.Literal("admin:read:roles"),
+  Type.Literal("admin:update:roles"),
+  Type.Literal("admin:delete:roles"),
+  Type.Literal("admin:create:permissions"),
+  Type.Literal("admin:read:permissions"),
+  Type.Literal("admin:update:permissions"),
+  Type.Literal("admin:delete:permissions"),
 ]);
 
 const SortInputSchema = Type.Object({
@@ -23,6 +37,17 @@ const RoleItem = Type.Object({
   createdAt: Type.String({ format: "date-time" }),
   updatedAt: Type.String({ format: "date-time" }),
 });
+
+function isUniqueViolation(error: unknown): boolean {
+  let current: unknown = error;
+  while (current && typeof current === "object") {
+    if ("code" in current && (current as { code: unknown }).code === "23505") {
+      return true;
+    }
+    current = "cause" in current ? (current as { cause: unknown }).cause : null;
+  }
+  return false;
+}
 
 export const GET = route({
   schema: {
@@ -90,5 +115,60 @@ export const GET = route({
         offset: result.offset,
       },
     });
+  },
+});
+
+export const POST = route({
+  schema: {
+    tags: ["Roles"],
+    summary: "Create role",
+    description:
+      "Creates a custom role with the given name, optional description, and permissions. Returns 409 if the role name is already taken.",
+    body: Type.Object({
+      name: Type.String({
+        minLength: 1,
+        description: "Unique role name (e.g. editor)",
+      }),
+      description: Type.Optional(
+        Type.Union([Type.String(), Type.Null()], {
+          description: "Optional human-readable description",
+        }),
+      ),
+      permissions: Type.Array(PermissionSchema, {
+        minItems: 1,
+        description: "At least one permission to grant",
+      }),
+    }),
+    response: {
+      201: SuccessResponse(RoleItem),
+      409: ErrorResponse,
+    },
+  },
+  handler: async (request, reply) => {
+    const db = request.container.resolve("db");
+    const { name, description, permissions } = request.body;
+
+    try {
+      const role = await createRole(db, {
+        name: name.trim(),
+        description:
+          typeof description === "string" ? description.trim() || null : null,
+        permissions: permissions as Permission[],
+      });
+
+      return reply.status(201).send({
+        message: "ok",
+        result: {
+          ...role,
+          createdAt: role.createdAt.toISOString(),
+          updatedAt: role.updatedAt.toISOString(),
+        },
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new RoleNameAlreadyTakenError();
+      }
+      throw error;
+    }
   },
 });

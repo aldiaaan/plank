@@ -23,11 +23,16 @@ export const GET = route({
     tags: ["Sessions"],
     summary: "List sessions",
     description:
-      "Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.",
+      "Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.",
     querystring: Type.Object({
       search: Type.Optional(
         Type.String({
           description: "Case-insensitive match against user name or email",
+        }),
+      ),
+      userIds: Type.Optional(
+        Type.Array(Type.String({ format: "uuid" }), {
+          description: "Only sessions belonging to any of these user ids",
         }),
       ),
       createdAtGte: Type.Optional(
@@ -90,6 +95,7 @@ export const GET = route({
     const db = request.container.resolve("db");
     const {
       search,
+      userIds,
       createdAtGte,
       createdAtLte,
       expiresAtGte,
@@ -101,6 +107,7 @@ export const GET = route({
 
     const result = await listSessions(db, {
       search,
+      userIds,
       createdAtGte,
       createdAtLte,
       expiresAtGte,

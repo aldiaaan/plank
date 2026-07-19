@@ -44,7 +44,7 @@ export type GetUsersData = {
         /**
          * Only users that have all of these permissions
          */
-        permissions?: Array<'write:all' | 'read:all'>;
+        permissions?: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
         /**
          * Include users created on or after this date (UTC)
          */
@@ -83,7 +83,7 @@ export type GetUsersResponses = {
                 id: string;
                 email: string;
                 name: string;
-                permissions: Array<'write:all' | 'read:all'>;
+                permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
                 createdAt: string;
                 updatedAt: string;
             }>;
@@ -148,7 +148,7 @@ export type PostUsersResponses = {
             id: string;
             email: string;
             name: string;
-            permissions: Array<'write:all' | 'read:all'>;
+            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
             createdAt: string;
             updatedAt: string;
         };
@@ -165,6 +165,10 @@ export type GetSessionsData = {
          * Case-insensitive match against user name or email
          */
         search?: string;
+        /**
+         * Only sessions belonging to any of these user ids
+         */
+        userIds?: Array<string>;
         /**
          * Include sessions created on or after this date (UTC)
          */
@@ -230,7 +234,7 @@ export type GetRolesData = {
     path?: never;
     query?: {
         search?: string;
-        permissions?: Array<'write:all' | 'read:all'>;
+        permissions?: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
         isSystem?: boolean;
         createdAtGte?: string;
         createdAtLte?: string;
@@ -256,7 +260,7 @@ export type GetRolesResponses = {
                 name: string;
                 description: string | unknown;
                 isSystem: boolean;
-                permissions: Array<'write:all' | 'read:all'>;
+                permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
                 createdAt: string;
                 updatedAt: string;
             }>;
@@ -268,6 +272,59 @@ export type GetRolesResponses = {
 };
 
 export type GetRolesResponse = GetRolesResponses[keyof GetRolesResponses];
+
+export type PostRolesData = {
+    body: {
+        /**
+         * Unique role name (e.g. editor)
+         */
+        name: string;
+        /**
+         * Optional human-readable description
+         */
+        description?: string | unknown;
+        /**
+         * At least one permission to grant
+         */
+        permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+    };
+    path?: never;
+    query?: never;
+    url: '/roles';
+};
+
+export type PostRolesErrors = {
+    /**
+     * Default Response
+     */
+    409: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+};
+
+export type PostRolesError = PostRolesErrors[keyof PostRolesErrors];
+
+export type PostRolesResponses = {
+    /**
+     * Default Response
+     */
+    201: {
+        message: string;
+        result: {
+            id: string;
+            name: string;
+            description: string | unknown;
+            isSystem: boolean;
+            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+            createdAt: string;
+            updatedAt: string;
+        };
+    };
+};
+
+export type PostRolesResponse = PostRolesResponses[keyof PostRolesResponses];
 
 export type PostAuthLoginData = {
     body: {
@@ -369,7 +426,7 @@ export type PostAuthVerifyResponses = {
             id: string;
             email: string;
             name: string;
-            permissions: Array<'write:all' | 'read:all'>;
+            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
         };
     };
 };

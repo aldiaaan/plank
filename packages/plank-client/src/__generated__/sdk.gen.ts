@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
+import type { GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostRolesData, PostRolesErrors, PostRolesResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -49,7 +49,7 @@ export const postUsers = <ThrowOnError extends boolean = false>(options: Options
 /**
  * List sessions
  *
- * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
  */
 export const getSessions = <ThrowOnError extends boolean = false>(options?: Options<GetSessionsData, ThrowOnError>): RequestResult<GetSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetSessionsResponses, unknown, ThrowOnError>({ url: '/sessions', ...options });
 
@@ -59,6 +59,20 @@ export const getSessions = <ThrowOnError extends boolean = false>(options?: Opti
  * Paginated, filterable list of roles. Used by the manage-roles table and when assigning a role to a user.
  */
 export const getRoles = <ThrowOnError extends boolean = false>(options?: Options<GetRolesData, ThrowOnError>): RequestResult<GetRolesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetRolesResponses, unknown, ThrowOnError>({ url: '/roles', ...options });
+
+/**
+ * Create role
+ *
+ * Creates a custom role with the given name, optional description, and permissions. Returns 409 if the role name is already taken.
+ */
+export const postRoles = <ThrowOnError extends boolean = false>(options: Options<PostRolesData, ThrowOnError>): RequestResult<PostRolesResponses, PostRolesErrors, ThrowOnError> => (options.client ?? client).post<PostRolesResponses, PostRolesErrors, ThrowOnError>({
+    url: '/roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Log in

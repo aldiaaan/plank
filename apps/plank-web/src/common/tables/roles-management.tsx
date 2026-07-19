@@ -90,7 +90,8 @@ export const roleManagementColumns: ColumnDef<RoleManagementRow>[] = [
         <p className="text-sm font-medium">
           {formatRoleLabel(row.original.name)}
         </p>
-        {row.original.description ? (
+        {row.original.description &&
+        typeof row.original.description === "string" ? (
           <p className="text-xs text-muted-foreground">
             {row.original.description.length > 60
               ? `${row.original.description.slice(0, 60)}...`

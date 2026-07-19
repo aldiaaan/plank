@@ -121,6 +121,8 @@ import {
  *               { id: "admin", label: "Admin" },
  *               { id: "user", label: "User" },
  *             ]},
+ *             // or async: { id: "userIds", label: "Users", type: "multi-select",
+ *             //   loadOptions: async ({ search }) => fetchUsers(search) },
  *             { id: "createdAt", label: "Created", type: "date-range" },
  *           ]}
  *           value={filters}
@@ -566,24 +568,37 @@ export type DataTableFilterable = {
   icon?: React.ElementType;
 };
 
+export type DataTableSelectOption = {
+  id: string | number;
+  label: string;
+};
+
+/**
+ * Async option loader for select / multi-select filters (e.g. REST search).
+ * Called when the chip opens and whenever the search string changes (debounced).
+ */
+export type DataTableLoadOptionsFn = (args: {
+  search: string;
+}) => Promise<Array<DataTableSelectOption>>;
+
 export type DataTableDateRangeFilterable = DataTableFilterable & {
   type: "date-range";
 };
 
 export type DataTableMultiSelectFilterable = DataTableFilterable & {
   type: "multi-select";
-  options: Array<{
-    id: string;
-    label: string;
-  }>;
+  /** Static options. Omit when using `loadOptions`. */
+  options?: Array<DataTableSelectOption>;
+  /** Load options from an API (searchable). Takes precedence over `options`. */
+  loadOptions?: DataTableLoadOptionsFn;
 };
 
 export type DataTableSelectFilterable = DataTableFilterable & {
   type: "select";
-  options: Array<{
-    id: string;
-    label: string;
-  }>;
+  /** Static options. Omit when using `loadOptions`. */
+  options?: Array<DataTableSelectOption>;
+  /** Load options from an API (searchable). Takes precedence over `options`. */
+  loadOptions?: DataTableLoadOptionsFn;
 };
 
 export type DataTableTextFilterable = DataTableFilterable & {
@@ -748,28 +763,87 @@ function DataTableDateFilterButton(props: DataTableDateFilterButtonProps) {
 export type DataTableSelectFilterButtonProps = {
   value?: Array<string | number>;
   onChange?: (value: DataTableFilterItemValue) => void;
-  options: Array<DataTableSelectFilterable["options"][number]>;
+  options?: Array<DataTableSelectOption>;
+  loadOptions?: DataTableLoadOptionsFn;
   onDelete?: () => void;
   children?: React.ReactNode;
   /** When false, only one option can be selected and the value is stored as `eq`. */
   multiple?: boolean;
 };
 
+function formatSelectOptionFallback(id: string | number) {
+  const key = String(id);
+  return key.length > 8 ? `#${key.slice(0, 8)}` : key;
+}
+
 function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
   const {
     value,
     onChange,
-    options,
+    options: staticOptions = [],
+    loadOptions,
     onDelete,
     children,
     multiple = true,
   } = props;
 
+  const isAsync = !!loadOptions;
+  const loadOptionsRef = useRef(loadOptions);
+  loadOptionsRef.current = loadOptions;
+
   const [open, setOpen] = useState(false);
-  const showSearch = multiple || options.length > 5;
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [asyncOptions, setAsyncOptions] = useState<DataTableSelectOption[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedCache, setSelectedCache] = useState<
+    Map<string, DataTableSelectOption>
+  >(() => new Map());
+
+  const options = isAsync ? asyncOptions : staticOptions;
+  const showSearch = isAsync || multiple || options.length > 5;
 
   useEffect(() => {
     setOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isAsync) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+
+    void loadOptionsRef
+      .current?.({ search: debouncedSearch })
+      .then((next) => {
+        if (cancelled) return;
+        setAsyncOptions(next);
+        setSelectedCache((prev) => {
+          const merged = new Map(prev);
+          for (const option of next) {
+            merged.set(String(option.id), option);
+          }
+          return merged;
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setAsyncOptions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAsync, debouncedSearch]);
+
+  const rememberOption = useCallback((option: DataTableSelectOption) => {
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(String(option.id), option);
+      return next;
+    });
   }, []);
 
   const handlePopoverOpenChange = (v: boolean) => {
@@ -780,11 +854,14 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
   };
 
   const selectedLabels = (value ?? [])
-    .map(
-      (id) =>
-        options.find((option) => String(option.id) === String(id))?.label ??
-        String(id),
-    )
+    .map((id) => {
+      const key = String(id);
+      return (
+        selectedCache.get(key)?.label ??
+        options.find((option) => String(option.id) === key)?.label ??
+        formatSelectOptionFallback(id)
+      );
+    })
     .join(", ");
 
   return (
@@ -814,60 +891,84 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto min-w-40 gap-0 p-0"
+          className="w-auto min-w-56 gap-0 p-0"
           side="bottom"
           align="start"
           sideOffset={6}
         >
-          <Command className="size-auto rounded-2xl">
+          <Command
+            className="size-auto rounded-2xl"
+            shouldFilter={!isAsync}
+          >
             {showSearch ? (
-              <CommandInput placeholder="Search..." />
+              isAsync ? (
+                <CommandInput
+                  placeholder="Search..."
+                  value={search}
+                  onValueChange={setSearch}
+                />
+              ) : (
+                <CommandInput placeholder="Search..." />
+              )
             ) : null}
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup>
-                {options.map((option) => {
-                  const selected = value?.some(
-                    (item) => String(item) === String(option.id),
-                  );
-                  return (
-                    <CommandItem
-                      key={option.id}
-                      value={option.label}
-                      onSelect={() => {
-                        if (multiple) {
-                          if (selected) {
-                            onChange?.({
-                              in: value?.filter(
-                                (item) => String(item) !== String(option.id),
-                              ),
-                            });
-                          } else {
-                            onChange?.({
-                              in: value
-                                ? [...value, option.id]
-                                : [option.id],
-                            });
-                          }
-                          return;
-                        }
+              {isLoading ? (
+                <div className="space-y-2 p-2">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-3/4" />
+                </div>
+              ) : (
+                <>
+                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandGroup>
+                    {options.map((option) => {
+                      const selected = value?.some(
+                        (item) => String(item) === String(option.id),
+                      );
+                      return (
+                        <CommandItem
+                          key={option.id}
+                          value={option.label}
+                          onSelect={() => {
+                            rememberOption(option);
 
-                        if (selected) {
-                          onChange?.({ eq: undefined });
-                        } else {
-                          onChange?.({ eq: option.id });
-                          setOpen(false);
-                        }
-                      }}
-                    >
-                      {option.label}
-                      {selected ? (
-                        <CheckIcon className="ml-auto size-4" />
-                      ) : null}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
+                            if (multiple) {
+                              if (selected) {
+                                onChange?.({
+                                  in: value?.filter(
+                                    (item) =>
+                                      String(item) !== String(option.id),
+                                  ),
+                                });
+                              } else {
+                                onChange?.({
+                                  in: value
+                                    ? [...value, option.id]
+                                    : [option.id],
+                                });
+                              }
+                              return;
+                            }
+
+                            if (selected) {
+                              onChange?.({ eq: undefined });
+                            } else {
+                              onChange?.({ eq: option.id });
+                              setOpen(false);
+                            }
+                          }}
+                        >
+                          {option.label}
+                          {selected ? (
+                            <CheckIcon className="ml-auto size-4" />
+                          ) : null}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
@@ -963,6 +1064,7 @@ export type DataTableFilterButtonProps = {
  * ```
  *
  * Filterable types: `"text"` | `"select"` | `"multi-select"` | `"date-range"`.
+ * Select / multi-select may use static `options` or async `loadOptions({ search })`.
  */
 export function DataTableFilterButton(props: DataTableFilterButtonProps) {
   const { filterables = [], value, onChange } = props;
@@ -1156,6 +1258,7 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                   );
                 }}
                 options={filter.options}
+                loadOptions={filter.loadOptions}
                 onDelete={() => {
                   onChange(value.filter((item) => item.id !== filter.id));
                 }}
@@ -1185,6 +1288,7 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                   );
                 }}
                 options={filter.options}
+                loadOptions={filter.loadOptions}
                 onDelete={() => {
                   onChange(value.filter((item) => item.id !== filter.id));
                 }}

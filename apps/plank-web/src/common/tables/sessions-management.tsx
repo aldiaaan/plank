@@ -1,4 +1,4 @@
-import type { GetSessionsResponse } from "@plank/client";
+import { getUsers, type GetSessionsResponse } from "@plank/client";
 import {
   Avatar,
   AvatarFallback,
@@ -6,6 +6,7 @@ import {
 import { Badge } from "@plank/ui/components/badge";
 import type {
   DataTableDateRangeFilterable,
+  DataTableMultiSelectFilterable,
   DataTableTextFilterable,
 } from "@plank/ui/components/data-table";
 import {
@@ -15,13 +16,19 @@ import {
 } from "@plank/ui/components/tooltip";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format, formatDistanceToNow, isPast } from "date-fns";
-import { CalendarClock, CalendarDays, SearchIcon } from "lucide-react";
+import {
+  CalendarClock,
+  CalendarDays,
+  SearchIcon,
+  UsersIcon,
+} from "lucide-react";
 
 export type SessionManagementRow =
   GetSessionsResponse["result"]["items"][number];
 
 export const sessionManagementFilterables: Array<
   | DataTableTextFilterable
+  | DataTableMultiSelectFilterable
   | DataTableDateRangeFilterable
 > = [
   {
@@ -29,6 +36,28 @@ export const sessionManagementFilterables: Array<
     label: "Search",
     type: "text",
     icon: SearchIcon,
+  },
+  {
+    id: "userIds",
+    label: "Users",
+    type: "multi-select",
+    icon: UsersIcon,
+    loadOptions: async ({ search }) => {
+      const { data } = await getUsers({
+        query: {
+          search: search.length > 0 ? search : undefined,
+          limit: 20,
+        },
+        credentials: "include",
+      });
+
+      return (
+        data?.result.items.map((user) => ({
+          id: user.id,
+          label: `${user.name} (${user.email})`,
+        })) ?? []
+      );
+    },
   },
   {
     id: "createdAt",

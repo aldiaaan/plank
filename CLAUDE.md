@@ -316,6 +316,39 @@ Built-in modules (`ConnectionModule`, `EventBusModule`, `SessionModule`, `AuthMo
 - Use **react-hook-form** for every form or controlled input surface (create/edit pages, dialogs, login, settings, etc.).
 - Do not manage form field state with ad-hoc `useState` / uncontrolled inputs when RHF fits.
 
+### Dashboard form pages
+
+When adding a create/edit form inside the dashboard, match the layout and field styling of `apps/plank-web/src/features/dashboard/components/create-user-page.tsx`:
+
+- Outer shell: `mx-auto flex min-h-0 w-full max-w-xl flex-1 flex-col gap-6`
+- Page header: `font-heading` title + short `text-sm text-muted-foreground` description
+- Form: `flex flex-col gap-6`, `noValidate`, fields in `FieldGroup` / `Field` / `FieldLabel` / `FieldError` from `@plank/ui`
+- Mark invalid fields with `data-invalid` on `Field` and `aria-invalid` on inputs
+- Use `Controller` for selects and other non-native controls
+- Actions: cancel + submit row with `ml-auto` (`outline` Cancel `Link` with `viewTransition`, primary submit)
+- On success: toast, invalidate the list query, navigate back to the related manage page
+- Surface mutation errors as `text-sm text-destructive` above the actions
+
+On the related manage / table page, put the create entry point in the page header (title + description on the left, primary button on the right) like `manage-users-page.tsx`:
+
+```tsx
+<div className="flex shrink-0 items-start justify-between gap-4">
+  <div>
+    <h1 className="text-xl font-semibold font-heading tracking-tight">
+      Manage Users
+    </h1>
+    <p className="text-sm text-muted-foreground">…</p>
+  </div>
+  <div>
+    <Button asChild>
+      <Link to="/dashboard/users/create" viewTransition>
+        Create User
+      </Link>
+    </Button>
+  </div>
+</div>
+```
+
 ### Remote data
 
 - Use **TanStack React Query** (`useQuery` / `useMutation`) for all remote data.
@@ -376,9 +409,9 @@ Persist table state in the URL with `@plank/ui/hooks` (`useSortingSearchParams`,
 
 Reference implementations:
 
-- Users: `GET /users` → `listUsers` → `users-management.tsx` → `manage-users-page.tsx`
+- Users: `GET /users` → `listUsers` → `users-management.tsx` → `manage-users-page.tsx` (+ `create-user-page.tsx`)
 - Sessions: `GET /sessions` → `listSessions` → `sessions-management.tsx` → `manage-sessions-page.tsx`
-- Roles: `GET /roles` → `listRoles` → `roles-management.tsx` → `manage-roles-page.tsx`
+- Roles: `GET /roles` → `listRoles` → `roles-management.tsx` → `manage-roles-page.tsx` (+ `create-role-page.tsx`)
 
 Paths:
 
@@ -420,6 +453,7 @@ Put columns + filterables under `apps/plank-web/src/common/tables/<name>.tsx`.
 
 - Row type: derive from the generated client response (`GetXResponse["result"]["items"][number]`).
 - `filterables`: `"text"` | `"select"` | `"multi-select"` | `"date-range"`.
+  - Select / multi-select: static `options`, or async `loadOptions({ search })` for REST-backed lists (e.g. users).
 - `columns`: TanStack `ColumnDef<Row>[]` with `cell` renderers.
 
 Filter value shape from `DataTable`:

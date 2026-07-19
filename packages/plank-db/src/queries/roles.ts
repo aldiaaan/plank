@@ -131,3 +131,28 @@ export async function findRoleById(
 
   return role;
 }
+
+export async function createRole(
+  db: DatabaseOrTransaction,
+  values: {
+    name: string;
+    description?: string | null;
+    permissions: Permission[];
+  },
+) {
+  const [role] = await db
+    .insert(roles)
+    .values({
+      name: values.name,
+      description: values.description ?? null,
+      permissions: values.permissions,
+      isSystem: false,
+    })
+    .returning();
+
+  if (!role) {
+    throw new Error("Failed to create role");
+  }
+
+  return role;
+}

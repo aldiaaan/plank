@@ -12,6 +12,7 @@ export default [
       "features/dashboard/components/manage-sessions-page.tsx",
     ),
     route("roles", "features/dashboard/components/manage-roles-page.tsx"),
+    route("roles/create", "features/dashboard/components/create-role-page.tsx"),
     route("*", "features/dashboard/components/dashboard-not-found-page.tsx"),
   ]),
 ] satisfies RouteConfig;

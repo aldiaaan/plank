@@ -10,6 +10,18 @@ import { EmailAlreadyTakenError, RoleNotFoundError } from "../errors";
 const PermissionSchema = Type.Union([
   Type.Literal("write:all"),
   Type.Literal("read:all"),
+  Type.Literal("admin:create:users"),
+  Type.Literal("admin:read:users"),
+  Type.Literal("admin:update:users"),
+  Type.Literal("admin:delete:users"),
+  Type.Literal("admin:create:roles"),
+  Type.Literal("admin:read:roles"),
+  Type.Literal("admin:update:roles"),
+  Type.Literal("admin:delete:roles"),
+  Type.Literal("admin:create:permissions"),
+  Type.Literal("admin:read:permissions"),
+  Type.Literal("admin:update:permissions"),
+  Type.Literal("admin:delete:permissions"),
 ]);
 
 const SortInputSchema = Type.Object({

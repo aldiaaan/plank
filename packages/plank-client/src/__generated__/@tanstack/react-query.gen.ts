@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { getPing, getRoles, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify, postUsers } from '../sdk.gen';
-import type { GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
+import { getPing, getRoles, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify, postRoles, postUsers } from '../sdk.gen';
+import type { GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostRolesData, PostRolesError, PostRolesResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -164,7 +164,7 @@ export const getSessionsQueryKey = (options?: Options<GetSessionsData>) => creat
 /**
  * List sessions
  *
- * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
  */
 export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryOptions<GetSessionsResponse, DefaultError, GetSessionsResponse, ReturnType<typeof getSessionsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -184,7 +184,7 @@ export const getSessionsInfiniteQueryKey = (options?: Options<GetSessionsData>):
 /**
  * List sessions
  *
- * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
  */
 export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) => {
     const opts = infiniteQueryOptions<GetSessionsResponse, DefaultError, InfiniteData<GetSessionsResponse>, QueryKey<Options<GetSessionsData>>, number | Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
@@ -261,6 +261,25 @@ export const getRolesInfiniteOptions = (options?: Options<GetRolesData>) => {
         queryKey: getRolesInfiniteQueryKey(options)
     });
     return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Create role
+ *
+ * Creates a custom role with the given name, optional description, and permissions. Returns 409 if the role name is already taken.
+ */
+export const postRolesMutation = (options?: Partial<Options<PostRolesData>>): UseMutationOptions<PostRolesResponse, PostRolesError, Options<PostRolesData>> => {
+    const mutationOptions: UseMutationOptions<PostRolesResponse, PostRolesError, Options<PostRolesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postRoles({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
 };
 
 /**

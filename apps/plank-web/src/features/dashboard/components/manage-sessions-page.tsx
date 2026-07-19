@@ -30,12 +30,16 @@ export const meta: Route.MetaFunction = () => [
 
 function filtersToQuery(filters: DataTableFilterValue[]) {
   const search = filters.find((filter) => filter.id === "search")?.value?.eq;
+  const userIds = filters
+    .find((filter) => filter.id === "userIds")
+    ?.value?.in?.filter((id): id is string => typeof id === "string");
   const createdAt = filters.find((filter) => filter.id === "createdAt")?.value;
   const expiresAt = filters.find((filter) => filter.id === "expiresAt")?.value;
 
   return {
     search:
       typeof search === "string" && search.length > 0 ? search : undefined,
+    userIds: userIds && userIds.length > 0 ? userIds : undefined,
     createdAtGte:
       typeof createdAt?.gte === "string" ? createdAt.gte : undefined,
     createdAtLte:
