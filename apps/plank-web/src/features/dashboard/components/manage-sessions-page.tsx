@@ -1,4 +1,4 @@
-import { getUsersOptions } from "@plank/client";
+import { getSessionsOptions } from "@plank/client";
 import {
   DataTable,
   type DataTableFilterValue,
@@ -15,32 +15,30 @@ import {
 } from "@plank/ui/hooks";
 import { useQuery } from "@tanstack/react-query";
 import {
-  userManagementColumns,
-  userManagementFilterables,
-} from "../../../common/tables/users-management";
+  sessionManagementColumns,
+  sessionManagementFilterables,
+} from "../../../common/tables/sessions-management";
 
 function filtersToQuery(filters: DataTableFilterValue[]) {
   const search = filters.find((filter) => filter.id === "search")?.value?.eq;
-  const permissions = filters
-    .find((filter) => filter.id === "permissions")
-    ?.value?.in?.filter(
-      (value): value is "read:all" | "write:all" =>
-        value === "read:all" || value === "write:all",
-    );
   const createdAt = filters.find((filter) => filter.id === "createdAt")?.value;
+  const expiresAt = filters.find((filter) => filter.id === "expiresAt")?.value;
 
   return {
     search:
       typeof search === "string" && search.length > 0 ? search : undefined,
-    permissions: permissions?.length ? permissions : undefined,
     createdAtGte:
       typeof createdAt?.gte === "string" ? createdAt.gte : undefined,
     createdAtLte:
       typeof createdAt?.lte === "string" ? createdAt.lte : undefined,
+    expiresAtGte:
+      typeof expiresAt?.gte === "string" ? expiresAt.gte : undefined,
+    expiresAtLte:
+      typeof expiresAt?.lte === "string" ? expiresAt.lte : undefined,
   };
 }
 
-export default function ManageUsersPage() {
+export default function ManageSessionsPage() {
   const [sorting, setSorting] = useSortingSearchParams();
   const [filters, setFilters] = useFilterSearchParams();
   const [{ pageIndex: page, pageSize: perPage }, setPagination] =
@@ -50,7 +48,7 @@ export default function ManageUsersPage() {
   const offset = (page - 1) * perPage;
 
   const { data, isLoading, isFetching } = useQuery({
-    ...getUsersOptions({
+    ...getSessionsOptions({
       query: {
         ...queryFilters,
         sorting: sorting.length > 0 ? sorting : undefined,
@@ -71,22 +69,22 @@ export default function ManageUsersPage() {
         <div className="flex min-h-0 flex-1 flex-col gap-4">
           <div>
             <h1 className="text-xl font-semibold font-heading tracking-tight">
-              Manage Users
+              Manage Sessions
             </h1>
             <p className="text-sm text-muted-foreground">
-              Search and filter users by permissions and registration date.
+              Search and filter active and expired user sessions.
             </p>
           </div>
 
           <DataTable.Root
             data={items}
-            columns={userManagementColumns}
+            columns={sessionManagementColumns}
             sorting={sorting}
             onSortingChange={setSorting}
           >
             <div className="flex flex-wrap items-center gap-2">
               <DataTable.FilterButton
-                filterables={userManagementFilterables}
+                filterables={sessionManagementFilterables}
                 value={filters}
                 onChange={(next) => {
                   void setFilters(next);

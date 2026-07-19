@@ -1,24 +1,19 @@
-import { listUsers } from "@plank/db/queries/users";
-import type { Permission } from "@plank/db";
+import { listSessions } from "@plank/db/queries/sessions";
 import { Type } from "typebox";
 import { route } from "../../../server/module";
 import { SuccessResponse } from "../../../server/responses";
-
-const PermissionSchema = Type.Union([
-  Type.Literal("write:all"),
-  Type.Literal("read:all"),
-]);
 
 const SortInputSchema = Type.Object({
   id: Type.String(),
   desc: Type.Boolean(),
 });
 
-const UserItem = Type.Object({
-  id: Type.String({ format: "uuid" }),
-  email: Type.String({ format: "email" }),
-  name: Type.String(),
-  permissions: Type.Array(PermissionSchema),
+const SessionItem = Type.Object({
+  id: Type.String(),
+  userId: Type.String({ format: "uuid" }),
+  userEmail: Type.String({ format: "email" }),
+  userName: Type.String(),
+  expiresAt: Type.String({ format: "date-time" }),
   createdAt: Type.String({ format: "date-time" }),
   updatedAt: Type.String({ format: "date-time" }),
 });
@@ -27,9 +22,10 @@ export const GET = route({
   schema: {
     querystring: Type.Object({
       search: Type.Optional(Type.String()),
-      permissions: Type.Optional(Type.Array(PermissionSchema)),
       createdAtGte: Type.Optional(Type.String({ format: "date" })),
       createdAtLte: Type.Optional(Type.String({ format: "date" })),
+      expiresAtGte: Type.Optional(Type.String({ format: "date" })),
+      expiresAtLte: Type.Optional(Type.String({ format: "date" })),
       sorting: Type.Optional(Type.Array(SortInputSchema)),
       limit: Type.Optional(
         Type.Integer({ minimum: 1, maximum: 100, default: 20 }),
@@ -39,7 +35,7 @@ export const GET = route({
     response: {
       200: SuccessResponse(
         Type.Object({
-          items: Type.Array(UserItem),
+          items: Type.Array(SessionItem),
           total: Type.Integer({ minimum: 0 }),
           limit: Type.Integer({ minimum: 1 }),
           offset: Type.Integer({ minimum: 0 }),
@@ -51,19 +47,21 @@ export const GET = route({
     const db = request.container.resolve("db");
     const {
       search,
-      permissions,
       createdAtGte,
       createdAtLte,
+      expiresAtGte,
+      expiresAtLte,
       sorting,
       limit = 20,
       offset = 0,
     } = request.query;
 
-    const result = await listUsers(db, {
+    const result = await listSessions(db, {
       search,
-      permissions: permissions as Permission[] | undefined,
       createdAtGte,
       createdAtLte,
+      expiresAtGte,
+      expiresAtLte,
       sorting,
       limit,
       offset,
@@ -72,10 +70,11 @@ export const GET = route({
     return reply.send({
       message: "ok",
       result: {
-        items: result.items.map((user) => ({
-          ...user,
-          createdAt: user.createdAt.toISOString(),
-          updatedAt: user.updatedAt.toISOString(),
+        items: result.items.map((session) => ({
+          ...session,
+          expiresAt: session.expiresAt.toISOString(),
+          createdAt: session.createdAt.toISOString(),
+          updatedAt: session.updatedAt.toISOString(),
         })),
         total: result.total,
         limit: result.limit,

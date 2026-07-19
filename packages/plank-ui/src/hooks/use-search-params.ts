@@ -1,23 +1,19 @@
 import {
   createParser,
-  parseAsArrayOf,
   parseAsInteger,
   useQueryState,
   useQueryStates,
 } from "nuqs";
 import { createMultiParser } from "nuqs/server";
 import qs from "qs";
+import type { OnChangeFn, SortingState } from "@tanstack/react-table";
+import { functionalUpdate } from "@tanstack/react-table";
+import {
+  parseAsSort,
+  parseAsSorting,
+} from "@plank/db/queries/sort-parser";
 
-export const parseAsSort = createParser({
-  parse(queryValue) {
-    const [id, desc] = queryValue.split(":");
-    if (!id && !desc) return null;
-    return { id, desc: desc === "desc" };
-  },
-  serialize(value) {
-    return `${value.id}:${value.desc ? "desc" : "asc"}`;
-  },
-});
+export { parseAsSort };
 
 function createPaginationParsers(options: {
   defaultPageIndex?: number;
@@ -58,7 +54,19 @@ export function usePaginationSearchParams(
 }
 
 export function useSortingSearchParams() {
-  return useQueryState("sorting", parseAsArrayOf(parseAsSort).withDefault([]));
+  const [sorting, setSorting] = useQueryState(
+    "sorting",
+    parseAsSorting.withDefault([]),
+  );
+
+  const onSortingChange: OnChangeFn<SortingState> = (updater) => {
+    void setSorting((current) => {
+      const next = functionalUpdate(updater, current ?? []);
+      return next.length > 0 ? next : [];
+    });
+  };
+
+  return [sorting, onSortingChange] as const;
 }
 
 export type ParsedFilterValueSymbols = {

@@ -6,12 +6,14 @@ import {
   users,
   type Permission,
 } from "../schema";
+import { buildOrderBy, type SortInput } from "./sort";
 
 export type ListUsersOptions = {
   search?: string;
   permissions?: Permission[];
   createdAtGte?: string;
   createdAtLte?: string;
+  sorting?: SortInput[];
   limit?: number;
   offset?: number;
 };
@@ -24,6 +26,13 @@ export type ListedUser = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+const userSortColumns = {
+  createdAt: users.createdAt,
+  updatedAt: users.updatedAt,
+  name: users.name,
+  email: users.email,
+} as const;
 
 export async function listUsers(
   db: DatabaseOrTransaction,
@@ -76,6 +85,9 @@ export async function listUsers(
   }
 
   const where = filters.length > 0 ? and(...filters) : undefined;
+  const orderBy = buildOrderBy(options.sorting, userSortColumns, [
+    desc(users.createdAt),
+  ]);
 
   const [rows, [totalRow]] = await Promise.all([
     db
@@ -88,7 +100,7 @@ export async function listUsers(
       })
       .from(users)
       .where(where)
-      .orderBy(desc(users.createdAt))
+      .orderBy(...orderBy)
       .limit(limit)
       .offset(offset),
     db.select({ total: count() }).from(users).where(where),

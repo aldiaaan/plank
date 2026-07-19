@@ -38,6 +38,10 @@ export type GetUsersData = {
         permissions?: Array<'write:all' | 'read:all'>;
         createdAtGte?: string;
         createdAtLte?: string;
+        sorting?: Array<{
+            id: string;
+            desc: boolean;
+        }>;
         limit?: number;
         offset?: number;
     };
@@ -67,6 +71,50 @@ export type GetUsersResponses = {
 };
 
 export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
+
+export type GetSessionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        search?: string;
+        createdAtGte?: string;
+        createdAtLte?: string;
+        expiresAtGte?: string;
+        expiresAtLte?: string;
+        sorting?: Array<{
+            id: string;
+            desc: boolean;
+        }>;
+        limit?: number;
+        offset?: number;
+    };
+    url: '/sessions';
+};
+
+export type GetSessionsResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            items: Array<{
+                id: string;
+                userId: string;
+                userEmail: string;
+                userName: string;
+                expiresAt: string;
+                createdAt: string;
+                updatedAt: string;
+            }>;
+            total: number;
+            limit: number;
+            offset: number;
+        };
+    };
+};
+
+export type GetSessionsResponse = GetSessionsResponses[keyof GetSessionsResponses];
 
 export type PostAuthLoginData = {
     body: {

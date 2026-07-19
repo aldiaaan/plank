@@ -2,6 +2,7 @@ import {
   DocumentationModule,
   HealthcheckModule,
   PlankServer,
+  SessionsModule,
   UserModule,
 } from "@plank/server";
 import { createClient } from "@hey-api/openapi-ts";
@@ -13,6 +14,7 @@ async function main() {
       new DocumentationModule({ baseUrl: "http://localhost:4000" }),
       new HealthcheckModule(),
       new UserModule(),
+      new SessionsModule(),
     ],
   });
 

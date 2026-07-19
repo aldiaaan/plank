@@ -2,6 +2,7 @@ import { fastify } from "fastify";
 import cors from "@fastify/cors";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import * as awilix from "awilix";
+import qs from "qs";
 import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 import { EventBusModule } from "../modules/event-bus/event-bus.module";
 import { ConnectionModule } from "../modules/connection/connection.module";
@@ -12,6 +13,16 @@ import { ClientError, ServerError } from "./errors";
 export class PlankServer {
   private readonly container = awilix.createContainer();
   private readonly app = fastify({
+    // Nested query objects (e.g. sorting[0][id]=…) need qs; Node's parser keeps flat keys.
+    querystringParser: (str) => qs.parse(str),
+    ajv: {
+      customOptions: {
+        // Coerce query strings into schema types (e.g. "true" → boolean),
+        // including a single scalar into an array when the schema expects one
+        // (e.g. permissions=write:all → ["write:all"]).
+        coerceTypes: "array",
+      },
+    },
     logger:
       process.env.NODE_ENV === "development"
         ? {

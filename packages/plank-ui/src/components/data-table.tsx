@@ -1,6 +1,7 @@
 import {
   type ColumnDef,
   flexRender,
+  functionalUpdate,
   getCoreRowModel,
   type OnChangeFn,
   type SortingState,
@@ -181,13 +182,21 @@ export function DataTableRoot<TData, TValue = unknown>(
     columns,
     data,
     manualSorting: true,
+    enableMultiSort: true,
+    // Treat every header click as multi-sort so sorting another column
+    // appends/toggles instead of replacing the existing sort state.
+    isMultiSortEvent: () => true,
     state: {
       sorting: sorting ?? [],
     },
-    enableMultiSort: true,
-    isMultiSortEvent: () => true,
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange,
+    onSortingChange: (updater) => {
+      if (!onSortingChange) return;
+      // Resolve against controlled state so URL/nuqs setters always get a
+      // concrete SortingState (TanStack passes an updater fn; nuqs' previous
+      // value can be undefined before the key exists in the URL).
+      onSortingChange(functionalUpdate(updater, sorting ?? []));
+    },
     defaultColumn: {
       minSize: 0,
       size: 0,
@@ -256,12 +265,17 @@ export function DataTableContent(props: DataTableContentProps) {
                 )}
               >
                 {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
                   return (
                     <TableHead
-                      onClick={header.column.getToggleSortingHandler()}
+                      onClick={
+                        canSort
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
                       className={cn(
                         "sticky top-0 z-20 bg-background tracking-tight select-none",
-                        header.column.getCanSort() && "cursor-pointer",
+                        canSort && "cursor-pointer",
                       )}
                       key={header.id}
                       style={{
@@ -280,7 +294,7 @@ export function DataTableContent(props: DataTableContentProps) {
                           asc: <ArrowUpIcon className="size-4" />,
                           desc: <ArrowDownIcon className="size-4" />,
                         }[header.column.getIsSorted() as string] ??
-                          (header.column.getCanSort() ? (
+                          (canSort ? (
                             <ArrowUpDownIcon className="size-4" />
                           ) : null)}
                       </div>
@@ -589,11 +603,7 @@ export type DataTableFilterValue = {
   value: DataTableFilterItemValue;
 };
 
-function DataTableFilterRemoveButton({
-  onDelete,
-}: {
-  onDelete?: () => void;
-}) {
+function DataTableFilterRemoveButton({ onDelete }: { onDelete?: () => void }) {
   if (!onDelete) return null;
 
   return (
@@ -683,10 +693,7 @@ function DataTableDateFilterButton(props: DataTableDateFilterButtonProps) {
           <Button
             variant="outline"
             size="sm"
-            className={cn(
-              "px-2 cursor-pointer",
-              onDelete && "rounded-r-none",
-            )}
+            className={cn("px-2 cursor-pointer", onDelete && "rounded-r-none")}
           >
             {children}
             {from || to ? (
@@ -768,10 +775,7 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
           <Button
             variant="outline"
             size="sm"
-            className={cn(
-              "px-2 cursor-pointer",
-              onDelete && "rounded-r-none",
-            )}
+            className={cn("px-2 cursor-pointer", onDelete && "rounded-r-none")}
           >
             {children}
 

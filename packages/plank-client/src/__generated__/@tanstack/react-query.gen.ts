@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { getPing, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify } from '../sdk.gen';
-import type { GetPingData, GetPingResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse } from '../types.gen';
+import { getPing, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify } from '../sdk.gen';
+import type { GetPingData, GetPingResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -121,6 +121,48 @@ export const getUsersInfiniteOptions = (options?: Options<GetUsersData>) => {
             return data;
         },
         queryKey: getUsersInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const getSessionsQueryKey = (options?: Options<GetSessionsData>) => createQueryKey('getSessions', options);
+
+export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryOptions<GetSessionsResponse, DefaultError, GetSessionsResponse, ReturnType<typeof getSessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSessionsQueryKey(options)
+});
+
+export const getSessionsInfiniteQueryKey = (options?: Options<GetSessionsData>): QueryKey<Options<GetSessionsData>> => createQueryKey('getSessions', options, true);
+
+export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) => {
+    const opts = infiniteQueryOptions<GetSessionsResponse, DefaultError, InfiniteData<GetSessionsResponse>, QueryKey<Options<GetSessionsData>>, number | Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getSessions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getSessionsInfiniteQueryKey(options)
     });
     return opts as Omit<typeof opts, 'initialData'>;
 };
