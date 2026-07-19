@@ -35,6 +35,9 @@ export type GetUsersData = {
     path?: never;
     query?: {
         search?: string;
+        permissions?: Array<'write:all' | 'read:all'>;
+        createdAtGte?: string;
+        createdAtLte?: string;
         limit?: number;
         offset?: number;
     };
@@ -52,6 +55,7 @@ export type GetUsersResponses = {
                 id: string;
                 email: string;
                 name: string;
+                permissions: Array<'write:all' | 'read:all'>;
                 createdAt: string;
                 updatedAt: string;
             }>;

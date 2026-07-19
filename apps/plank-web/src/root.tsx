@@ -11,6 +11,7 @@ import "@plank/ui/styles.css";
 import { Toaster } from "@plank/ui/components/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   return {};
@@ -39,7 +40,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <NuqsAdapter>
+      <Outlet />
+    </NuqsAdapter>
+  );
 }
 
 export function ErrorBoundary({ error }: { error: Error }) {

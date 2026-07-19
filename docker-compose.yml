@@ -1,16 +1,16 @@
 services:
-  pgweb:
-    container_name: plank-pgweb
-    image: sosedoff/pgweb
-    ports:
-      - "8081:8081"
-    environment:
-      PGWEB_DATABASE_URL: postgres://plank:plank@postgres.internal:5432/plank?sslmode=disable
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      plank:
+  # pgweb:
+  #   container_name: plank-pgweb
+  #   image: sosedoff/pgweb
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     PGWEB_DATABASE_URL: postgres://plank:plank@postgres.internal:5432/plank?sslmode=disable
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     plank:
   postgres:
     container_name: plank-postgres
     image: postgres:18-alpine

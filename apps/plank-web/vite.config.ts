@@ -13,15 +13,31 @@ export default defineConfig(({ isSsrBuild }) => ({
   ],
   emptyOutDir: true,
   ssr: {
-    noExternal: ["react-router", "@react-router/express", "@react-router/node"],
+    // Keep nuqs in the SSR graph so it shares the same react-router instance
+    // as the app. If externalized, Node resolves react-router's production
+    // build while Vite SSR uses development — NavigationContext mismatches
+    // and useNavigate throws "may be used only in the context of a <Router>".
+    noExternal: [
+      "react-router",
+      "@react-router/express",
+      "@react-router/node",
+      "nuqs",
+    ],
   },
   chunkSizeWarningLimit: 1024 * 4,
   reportCompressedSize: true,
   resolve: {
     tsconfigPaths: true,
+    dedupe: ["react", "react-dom", "react-router"],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router"],
+    include: [
+      "react",
+      "react-dom",
+      "react-router",
+      "nuqs",
+      "nuqs/adapters/react-router/v8",
+    ],
   },
   build: {
     manifest: true,

@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   type OnChangeFn,
   type SortingState,
+  type Table as TanStackTable,
   useReactTable,
 } from "@tanstack/react-table";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -24,17 +25,19 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React, {
-    createContext,
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 
-import { cn } from "../../utils/react";
-import { Button, buttonVariants } from "../button";
-import { Calendar } from "../calendar";
+import { useDataTable } from "../hooks/use-datatable";
+import { cn } from "../utils";
+import { Button, buttonVariants } from "./button";
+import { Calendar } from "./calendar";
 import {
   Command,
   CommandEmpty,
@@ -42,7 +45,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../command";
+} from "./command";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -50,19 +53,19 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../dropdown-menu";
+} from "./dropdown-menu";
 import { Input } from "./input";
-import { Popover, PopoverContent, PopoverTrigger } from "../popover";
-import { useScrollable } from "../scrollable";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { ScrollableContext } from "./scrollable";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../select";
-import { Separator } from "../separator";
-import { Skeleton } from "../skeleton";
+} from "./select";
+import { Separator } from "./separator";
+import { Skeleton } from "./skeleton";
 import {
   Table,
   TableBody,
@@ -70,66 +73,121 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../table";
-import { useDataTable } from "./use-datatable";
+} from "./table";
 
-export type DataTableRootProps<TData, TValue> = {
+/**
+ * Compound data table built on TanStack Table.
+ *
+ * Sorting, filtering and pagination are **manual** (server-driven). The table
+ * only renders rows and emits UI events; you own the data fetching.
+ *
+ * Composition:
+ * ```tsx
+ * <DataTable.Root data={rows} columns={columns} sorting={sorting} onSortingChange={setSorting}>
+ *   <DataTable.FilterButton filterables={...} value={filters} onChange={setFilters} />
+ *   <DataTable.ColumnSettings />
+ *   <DataTable.Content isLoading={isLoading} border />
+ *   <DataTable.Pagination page={page} totalPages={totalPages} perPage={perPage} total={total} ... />
+ * </DataTable.Root>
+ * ```
+ *
+ * @example
+ * ```tsx
+ * import { DataTable } from "@plank/ui/components/data-table"
+ * import type { ColumnDef, SortingState } from "@tanstack/react-table"
+ *
+ * type User = { id: string; name: string; email: string }
+ *
+ * const columns: ColumnDef<User>[] = [
+ *   { accessorKey: "name", header: "Name" },
+ *   { accessorKey: "email", header: "Email" },
+ * ]
+ *
+ * function UsersTable({ data, total, isLoading }: { data: User[]; total: number; isLoading?: boolean }) {
+ *   const [sorting, setSorting] = useState<SortingState>([])
+ *   const [page, setPage] = useState(1)
+ *   const [perPage, setPerPage] = useState(20)
+ *   const [filters, setFilters] = useState<DataTableFilterValue[]>([])
+ *   const totalPages = Math.max(1, Math.ceil(total / perPage))
+ *
+ *   return (
+ *     <DataTable.Root data={data} columns={columns} sorting={sorting} onSortingChange={setSorting}>
+ *       <div className="flex gap-2 p-2">
+ *         <DataTable.FilterButton
+ *           filterables={[
+ *             { id: "search", label: "Search", type: "text" },
+ *             { id: "role", label: "Role", type: "multi-select", options: [
+ *               { id: "admin", label: "Admin" },
+ *               { id: "user", label: "User" },
+ *             ]},
+ *             { id: "createdAt", label: "Created", type: "date-range" },
+ *           ]}
+ *           value={filters}
+ *           onChange={setFilters}
+ *         />
+ *         <DataTable.ColumnSettings />
+ *       </div>
+ *       <DataTable.Content isLoading={isLoading} border />
+ *       <DataTable.Pagination
+ *         page={page}
+ *         perPage={perPage}
+ *         total={total}
+ *         totalPages={totalPages}
+ *         onPageChange={setPage}
+ *         onPerPageChange={setPerPage}
+ *       />
+ *     </DataTable.Root>
+ *   )
+ * }
+ * ```
+ */
+export type DataTableRootProps<TData, TValue = unknown> = {
   children?: React.ReactNode;
   data: TData[];
   columns: ColumnDef<TData, TValue>[];
-  className?: string;
-  border?: boolean;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
 };
 
-export type DataTableContentProps<TData, TValue> = {
-  children?: React.ReactNode;
+export type DataTableContentProps = {
   className?: string;
   border?: boolean;
   isLoading?: boolean;
 };
 
-
-export type DataTableContextType = {
-  table: Table<any>;
+export type DataTableContextType<TData = unknown> = {
+  table: TanStackTable<TData>;
 };
 
-export const DataTableContext = createContext<DataTableContextType>(
-  null as any,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- compound API shares one context across generic roots
+export const DataTableContext = createContext<DataTableContextType<any> | null>(
+  null,
 );
 
-export function DataTableRoot<TData, TValue>(
+/**
+ * Creates the TanStack table instance and provides it to children via context.
+ *
+ * Sorting is manual (`manualSorting: true`) — pass `sorting` and
+ * `onSortingChange` and refetch on the server when they change.
+ *
+ * Must wrap all other `DataTable.*` parts.
+ */
+export function DataTableRoot<TData, TValue = unknown>(
   props: DataTableRootProps<TData, TValue>,
 ) {
-  const {
-    children,
-    data,
-    columns,
-    className,
-    border,
-    onSortingChange,
-    sorting,
-  } = props;
+  const { children, data, columns, sorting, onSortingChange } = props;
 
   const table = useReactTable({
-    columns: columns,
-    // manualSorting: true,
+    columns,
+    data,
     manualSorting: true,
-    data: data,
     state: {
-      sorting: sorting || [],
+      sorting: sorting ?? [],
     },
     enableMultiSort: true,
-    // getSortedRowModel: getSortedRowModel(),
-    // getRowId: (row) => {
-    //   // @ts-ignore
-    //   // dont forget to get id column
-    //   return row.id;
-    // },
     isMultiSortEvent: () => true,
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange: props.onSortingChange,
+    onSortingChange,
     defaultColumn: {
       minSize: 0,
       size: 0,
@@ -137,7 +195,7 @@ export function DataTableRoot<TData, TValue>(
   });
 
   return (
-    <DataTableContext.Provider value={{ table }}>
+    <DataTableContext.Provider value={{ table: table as TanStackTable<any> }}>
       {children}
     </DataTableContext.Provider>
   );
@@ -145,9 +203,14 @@ export function DataTableRoot<TData, TValue>(
 
 const MotionTableRow = motion.create(TableRow);
 
-export function DataTableContent<TData, TValue>(
-  props: DataTableContentProps<TData, TValue>,
-) {
+/**
+ * Renders the table header and body.
+ *
+ * - `isLoading` shows skeleton placeholder rows while data is loading.
+ * - `border` adds right borders to cells/headers.
+ * - Renders "No results." when there are no rows and not loading.
+ */
+export function DataTableContent(props: DataTableContentProps) {
   const { className, border } = props;
 
   const { table } = useDataTable();
@@ -282,15 +345,20 @@ export function DataTableContent<TData, TValue>(
 }
 
 export type DataTableColumnSettingsProps = {
-  children?: React.ReactNode;
   className?: string;
 };
 
+/**
+ * Dropdown for showing/hiding columns and resetting column visibility.
+ *
+ * Reads the table instance from context, so it must be rendered inside
+ * `DataTable.Root`.
+ */
 export function DataTableColumnSettings(props: DataTableColumnSettingsProps) {
-  const { children, className } = props;
+  const { className } = props;
 
   const { table } = useDataTable();
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <DropdownMenu>
@@ -343,7 +411,6 @@ export function DataTableColumnSettings(props: DataTableColumnSettingsProps) {
 }
 
 export type DataTablePaginationProps = {
-  children?: React.ReactNode;
   className?: string;
   total?: number;
   totalPages?: number;
@@ -353,9 +420,16 @@ export type DataTablePaginationProps = {
   onPerPageChange?: (perPage: number) => void;
 };
 
+/**
+ * External pagination controls (first/prev/next/last + rows-per-page select).
+ *
+ * Pagination is server-driven: this component only emits `onPageChange` and
+ * `onPerPageChange`. Scrolls the table back to the top on page change.
+ *
+ * Renders `null` if `totalPages` or `perPage` are not provided.
+ */
 export function DataTablePagination(props: DataTablePaginationProps) {
   const {
-    children,
     className,
     totalPages,
     page,
@@ -365,16 +439,14 @@ export function DataTablePagination(props: DataTablePaginationProps) {
     total,
   } = props;
 
-  const { table } = useDataTable();
-
-  const { scrollToTop } = useScrollable();
+  const scrollable = useContext(ScrollableContext);
 
   const handlePageChange = useCallback(
-    (page: number) => {
-      onPageChange?.(page);
-      scrollToTop();
+    (nextPage: number) => {
+      onPageChange?.(nextPage);
+      scrollable?.scrollToTop();
     },
-    [onPageChange, scrollToTop],
+    [onPageChange, scrollable],
   );
 
   const isReady = totalPages && perPage;
@@ -396,7 +468,7 @@ export function DataTablePagination(props: DataTablePaginationProps) {
             {(page - 1) * perPage + 1}
           </span>{" "}
           -{" "}
-          <span className="font-medium text-foregverround">
+          <span className="font-medium text-foreground">
             {Math.min(page * perPage, total || Number.MAX_SAFE_INTEGER)}
           </span>{" "}
           of <span className="font-medium text-foreground">{total}</span>
@@ -517,15 +589,42 @@ export type DataTableFilterValue = {
   value: DataTableFilterItemValue;
 };
 
-function DataTableDateFilterButton(
-  props: DataTableFilterItemValue & {
-    children?: React.ReactNode;
-    onDelete?: () => void;
-    onChange: (value: DataTableFilterItemValue) => void;
-    id: string;
-    icon?: React.ElementType;
-  },
-) {
+function DataTableFilterRemoveButton({
+  onDelete,
+}: {
+  onDelete?: () => void;
+}) {
+  if (!onDelete) return null;
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon-sm"
+      aria-label="Remove filter"
+      className="shrink-0 rounded-l-none border-l-0 px-0"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDelete();
+      }}
+    >
+      <X className="size-3.5" />
+    </Button>
+  );
+}
+
+export type DataTableDateFilterButtonProps = {
+  children?: React.ReactNode;
+  onDelete?: () => void;
+  onChange: (value: DataTableFilterItemValue) => void;
+  id: string;
+  icon?: React.ElementType;
+  gte?: string | number;
+  lte?: string | number;
+};
+
+function DataTableDateFilterButton(props: DataTableDateFilterButtonProps) {
   const { gte, lte, onDelete, onChange, children } = props;
 
   const [open, setOpen] = useState(false);
@@ -578,62 +677,63 @@ function DataTableDateFilterButton(
   };
 
   return (
-    <Popover modal open={open} onOpenChange={handlePopoverOpenChange}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="px-2 cursor-pointer">
-          {children}
-          {from || to ? (
-            <>
-              <Separator orientation="vertical" />
-              {renderValue({ from, to })}
-            </>
-          ) : (
-            <>
-              <Separator orientation="vertical" />
-              <p className="text-muted-foreground/50">
-                {(from || to) && open
-                  ? "Select a date range"
-                  : "Click to select date range"}
-              </p>
-            </>
-          )}
-          <Separator orientation="vertical" />
-          <span
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete?.();
-            }}
+    <div className="flex items-stretch">
+      <Popover modal open={open} onOpenChange={handlePopoverOpenChange}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "px-2 cursor-pointer",
+              onDelete && "rounded-r-none",
+            )}
           >
-            <X />
-          </span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        // onCloseAutoFocus={(e) => e.preventDefault()}
-        className="w-auto p-0"
-      >
-        <Calendar
-          mode="range"
-          numberOfMonths={2}
-          selected={{
-            from: from ? new Date(from) : undefined,
-            to: to ? new Date(to) : undefined,
-          }}
-          onSelect={(value) => {
-            if (!value) return;
-            // range always has from and to defined, so we don't need to check for undefined
-            if (!value.from || !value.to) return;
-            setFrom(value.from);
-            setTo(value.to);
-            // onChange({
-            //   gte: format(value.from, 'yyyy-MM-dd'),
-            //   lte: format(value.to, 'yyyy-MM-dd'),
-            //   in: [],
-            // });
-          }}
-        />
-      </PopoverContent>
-    </Popover>
+            {children}
+            {from || to ? (
+              <>
+                <Separator orientation="vertical" />
+                {renderValue({ from, to })}
+              </>
+            ) : (
+              <>
+                <Separator orientation="vertical" />
+                <p className="text-muted-foreground/50">
+                  {(from || to) && open
+                    ? "Select a date range"
+                    : "Click to select date range"}
+                </p>
+              </>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          // onCloseAutoFocus={(e) => e.preventDefault()}
+          className="w-auto p-0"
+        >
+          <Calendar
+            mode="range"
+            numberOfMonths={2}
+            selected={{
+              from: from ? new Date(from) : undefined,
+              to: to ? new Date(to) : undefined,
+            }}
+            onSelect={(value) => {
+              if (!value) return;
+              // range always has from and to defined, so we don't need to check for undefined
+              if (!value.from || !value.to) return;
+              setFrom(value.from);
+              setTo(value.to);
+              // onChange({
+              //   gte: format(value.from, 'yyyy-MM-dd'),
+              //   lte: format(value.to, 'yyyy-MM-dd'),
+              //   in: [],
+              // });
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+      <DataTableFilterRemoveButton onDelete={onDelete} />
+    </div>
   );
 }
 
@@ -662,10 +762,17 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
   };
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-stretch">
       <Popover modal open={open} onOpenChange={handlePopoverOpenChange}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="px-2 cursor-pointer">
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "px-2 cursor-pointer",
+              onDelete && "rounded-r-none",
+            )}
+          >
             {children}
 
             {value && value.length > 0 ? (
@@ -679,19 +786,6 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
                 <p className="text-muted-foreground/50">
                   Click to select options
                 </p>
-              </>
-            )}
-            {onDelete && (
-              <>
-                <Separator orientation="vertical" />
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete?.();
-                  }}
-                >
-                  <X />
-                </span>
               </>
             )}
           </Button>
@@ -729,6 +823,7 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
           </Command>
         </PopoverContent>
       </Popover>
+      <DataTableFilterRemoveButton onDelete={onDelete} />
     </div>
   );
 }
@@ -743,14 +838,17 @@ function DataTableTextFilterButton(
 ) {
   const { value, onChange, children, onDelete } = props;
 
-  const [text, setText] = useState(value);
-
-  const debouncedSetText = useDebounce(text, 1000);
+  const [text, setText] = useState(value?.toString() ?? "");
+  const debouncedText = useDebounce(text, 1000);
   const ref = useRef<HTMLInputElement>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   useEffect(() => {
-    onChange?.(text);
-  }, [debouncedSetText]);
+    const current = value?.toString() ?? "";
+    if (debouncedText === current) return;
+    onChangeRef.current?.(debouncedText);
+  }, [debouncedText, value]);
 
   useEffect(() => {
     if (ref.current) {
@@ -761,25 +859,24 @@ function DataTableTextFilterButton(
   }, []);
 
   return (
-    <div className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-      {children}
-      <Separator orientation="vertical" />
-      <Input
-        ref={ref}
-        placeholder="Search..."
-        className="outline-none w-40 p-0 py-0.5 border-none focus-visible:ring-0 text-sm focus-visible:ring-offset-0"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <Separator orientation="vertical" />
-      <span
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete?.();
-        }}
+    <div className="flex items-stretch">
+      <div
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          onDelete && "rounded-r-none",
+        )}
       >
-        <X />
-      </span>
+        {children}
+        <Separator orientation="vertical" />
+        <Input
+          ref={ref}
+          placeholder="Search..."
+          className="outline-none w-40 p-0 py-0.5 border-none focus-visible:ring-0 text-sm focus-visible:ring-offset-0"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+      </div>
+      <DataTableFilterRemoveButton onDelete={onDelete} />
     </div>
   );
 }
@@ -799,6 +896,25 @@ export type DataTableFilterButtonProps = {
   onChange: DataTableFilterOnChangeFn;
 };
 
+/**
+ * Filter button that renders a dropdown of available filters and the active
+ * filter chips below it.
+ *
+ * Filtering is external — this component only manages UI state via
+ * `value` / `onChange`. Apply the emitted values on the server when refetching.
+ *
+ * Filter value shape:
+ * ```ts
+ * type DataTableFilterItemValue = {
+ *   gte?: string | number   // date-range from
+ *   lte?: string | number   // date-range to
+ *   in?: (string | number | null)[]  // select / multi-select
+ *   eq?: string | number    // text
+ * } | undefined
+ * ```
+ *
+ * Filterable types: `"text"` | `"select"` | `"multi-select"` | `"date-range"`.
+ */
 export function DataTableFilterButton(props: DataTableFilterButtonProps) {
   const { filterables = [], value, onChange } = props;
 
@@ -830,6 +946,7 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
               case "date-range":
                 return (
                   <DropdownMenuItem
+                    key={filterable.id}
                     onClick={() => {
                       if (!value.some((item) => item.id === filterable.id)) {
                         onChange([
@@ -853,6 +970,7 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
               case "text":
                 return (
                   <DropdownMenuItem
+                    key={filterable.id}
                     onClick={() => {
                       if (!value.some((item) => item.id === filterable.id)) {
                         onChange([
@@ -872,8 +990,10 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                   </DropdownMenuItem>
                 );
               case "multi-select":
+              case "select":
                 return (
                   <DropdownMenuItem
+                    key={filterable.id}
                     onClick={() => {
                       if (!value.some((item) => item.id === filterable.id)) {
                         onChange([
@@ -892,8 +1012,9 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                     {filterable.label}
                   </DropdownMenuItem>
                 );
+              default:
+                return null;
             }
-            return null;
           })}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -910,6 +1031,7 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
           case "date-range":
             return (
               <DataTableDateFilterButton
+                key={filter.id}
                 id={filter.id}
                 gte={itemValue?.gte}
                 lte={itemValue?.lte}
@@ -944,12 +1066,14 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
               </DataTableDateFilterButton>
             );
           case "multi-select":
+          case "select":
             return (
               <DataTableSelectFilterButton
+                key={filter.id}
                 value={
-                  itemValue?.in?.filter((item) => item !== null) as Array<
-                    string | number
-                  >
+                  itemValue?.in?.filter(
+                    (item): item is string | number => item !== null,
+                  ) ?? []
                 }
                 onChange={(newValue) => {
                   onChange(
@@ -973,6 +1097,7 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
           case "text":
             return (
               <DataTableTextFilterButton
+                key={filter.id}
                 type={filter.type}
                 label={filter.label}
                 id={filter.id}
@@ -980,6 +1105,11 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                   onChange(value.filter((item) => item.id !== filter.id));
                 }}
                 onChange={(newValue) => {
+                  const currentItem = value.find(
+                    (item) => item.id === filter.id,
+                  );
+                  if (currentItem?.value?.eq === newValue) return;
+
                   onChange(
                     value.map((item) => {
                       if (item.id === filter.id) {
@@ -995,12 +1125,25 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                 {filter.label}
               </DataTableTextFilterButton>
             );
+          default:
+            return null;
         }
       })}
     </>
   );
 }
 
+/**
+ * Compound data table namespace. See {@link DataTableRoot} for full usage docs.
+ *
+ * Parts:
+ * - `DataTable.Root` — creates the table instance + context.
+ * - `DataTable.Content` — renders header/body.
+ * - `DataTable.FilterButton` — adds filter chips.
+ * - `DataTable.DateFilterButton` — standalone date-range filter chip.
+ * - `DataTable.Pagination` — external page controls.
+ * - `DataTable.ColumnSettings` — show/hide columns dropdown.
+ */
 export const DataTable = {
   Root: DataTableRoot,
   Content: DataTableContent,

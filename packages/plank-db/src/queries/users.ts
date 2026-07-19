@@ -1,21 +1,42 @@
-import { and, count, desc, ilike, or, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, inArray, lte, or, sql, type SQL } from "drizzle-orm";
 import type { DatabaseOrTransaction } from "..";
-import { users } from "../schema";
+import {
+  roles,
+  userRoles,
+  users,
+  type Permission,
+} from "../schema";
 
 export type ListUsersOptions = {
   search?: string;
+  permissions?: Permission[];
+  createdAtGte?: string;
+  createdAtLte?: string;
   limit?: number;
   offset?: number;
+};
+
+export type ListedUser = {
+  id: string;
+  email: string;
+  name: string;
+  permissions: Permission[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export async function listUsers(
   db: DatabaseOrTransaction,
   options: ListUsersOptions = {},
-) {
+): Promise<{
+  items: ListedUser[];
+  total: number;
+  limit: number;
+  offset: number;
+}> {
   const limit = options.limit ?? 20;
   const offset = options.offset ?? 0;
   const search = options.search?.trim();
-
   const filters: SQL[] = [];
 
   if (search) {
@@ -27,9 +48,36 @@ export async function listUsers(
     if (searchFilter) filters.push(searchFilter);
   }
 
+  if (options.createdAtGte) {
+    filters.push(gte(users.createdAt, new Date(options.createdAtGte)));
+  }
+
+  if (options.createdAtLte) {
+    const end = new Date(options.createdAtLte);
+    end.setHours(23, 59, 59, 999);
+    filters.push(lte(users.createdAt, end));
+  }
+
+  if (options.permissions?.length) {
+    const permissionArray = sql`ARRAY[${sql.join(
+      options.permissions.map((permission) => sql`${permission}`),
+      sql`, `,
+    )}]::permission[]`;
+
+    filters.push(
+      sql`exists (
+        select 1
+        from ${userRoles}
+        inner join ${roles} on ${eq(userRoles.roleId, roles.id)}
+        where ${eq(userRoles.userId, users.id)}
+          and ${roles.permissions} && ${permissionArray}
+      )`,
+    );
+  }
+
   const where = filters.length > 0 ? and(...filters) : undefined;
 
-  const [items, [totalRow]] = await Promise.all([
+  const [rows, [totalRow]] = await Promise.all([
     db
       .select({
         id: users.id,
@@ -46,8 +94,32 @@ export async function listUsers(
     db.select({ total: count() }).from(users).where(where),
   ]);
 
+  const userIds = rows.map((row) => row.id);
+  const permissionsByUserId = new Map<string, Permission[]>();
+
+  if (userIds.length > 0) {
+    const permissionRows = await db
+      .select({
+        userId: userRoles.userId,
+        permissions: roles.permissions,
+      })
+      .from(userRoles)
+      .innerJoin(roles, eq(userRoles.roleId, roles.id))
+      .where(inArray(userRoles.userId, userIds));
+
+    for (const row of permissionRows) {
+      const existing = permissionsByUserId.get(row.userId) ?? [];
+      permissionsByUserId.set(row.userId, [
+        ...new Set([...existing, ...row.permissions]),
+      ]);
+    }
+  }
+
   return {
-    items,
+    items: rows.map((row) => ({
+      ...row,
+      permissions: permissionsByUserId.get(row.id) ?? [],
+    })),
     total: totalRow?.total ?? 0,
     limit,
     offset,
