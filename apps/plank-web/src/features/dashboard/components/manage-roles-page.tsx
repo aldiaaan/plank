@@ -64,7 +64,7 @@ export default function ManageRolesPage() {
   const queryFilters = filtersToQuery(filters);
   const offset = (page - 1) * perPage;
 
-  const { data, isLoading, isFetching } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     ...getRolesOptions({
       query: {
         ...queryFilters,
@@ -129,6 +129,10 @@ export default function ManageRolesPage() {
               >
                 <DataTable.Content
                   isLoading={isLoading || isFetching}
+                  error={error}
+                  onRetry={() => {
+                    void refetch();
+                  }}
                   border
                   className="border-0"
                 />

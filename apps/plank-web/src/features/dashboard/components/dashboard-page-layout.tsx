@@ -29,6 +29,7 @@ import {
   Users2,
   UsersIcon,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Fragment, useMemo } from "react";
 import {
   Link,
@@ -222,6 +223,7 @@ export default function DashboardPage() {
   const { email, name } = useLoaderData<typeof loader>();
   const breadcrumbs = useDashboardBreadcrumbs(groups);
   const submit = useSubmit();
+  const queryClient = useQueryClient();
 
   return (
     <SidebarProvider className="h-svh overflow-hidden">
@@ -233,6 +235,7 @@ export default function DashboardPage() {
         teams={teams}
         groups={groups}
         onLogout={() => {
+          queryClient.clear();
           submit(null, { method: "post" });
         }}
       />

@@ -3,7 +3,6 @@ import {
   HealthcheckModule,
   PlankServer,
   RolesModule,
-  SessionsModule,
   UserModule,
 } from "@plank/server";
 
@@ -20,7 +19,6 @@ async function main() {
 
   modules.push(new HealthcheckModule());
   modules.push(new UserModule());
-  modules.push(new SessionsModule());
   modules.push(new RolesModule());
 
   const server = new PlankServer({

@@ -19,21 +19,36 @@ packages/plank-server/src/modules/<name>/
 ```
 
 ```ts
-// modules/widgets/widgets.module.ts
-export class WidgetsModule extends ServerModule {
-  name = "widgets"; // must match folder name (used to find routes/)
+// modules/widget/widget.module.ts
+export class WidgetModule extends ServerModule {
+  name = "widget"; // must match folder name (used to find routes/)
 
   protected routePrefix(): string {
-    return "/widgets";
+    return "/widgets"; // REST collection paths may be plural
   }
 }
 ```
 
-`name` drives `routesDir()` → `modules/<name>/routes/`. Missing `routes/` is fine (DI-only modules like `session`).
-
+Module naming is **singular**, not plural: folder, `name`, and class (`user` / `UserModule`, not `users` / `UsersModule`). `routePrefix()` may still use a plural collection path (e.g. `/users`). `name` drives `routesDir()` → `modules/<name>/routes/`. Missing `routes/` is fine (DI-only modules like `connection` / `event-bus`).
 ### Route files
 
 Export HTTP method names (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, …). Prefer `route({ schema, handler })` from `ServerModule`.
+
+**Route permissions:** declare required permissions on the route via Fastify `config.allow` (`Permission[]` from `@plank/db`). Typed on `FastifyContextConfig` in `server/types.ts`. Enforcement is not implemented yet — still declare `allow` on protected routes so the shape is ready:
+
+```ts
+export const GET = route({
+  config: {
+    allow: ["admin:read:users"],
+  },
+  schema: {
+    // …
+  },
+  handler: async (request, reply) => {
+    // …
+  },
+});
+```
 
 **Every endpoint must ship with OpenAPI docs** (via `@fastify/swagger` / `/openapi.json` / `/reference`). Incomplete schemas or missing tags are not acceptable — codegen and the API reference both depend on this.
 
@@ -96,11 +111,11 @@ Filename → path (appended to `routePrefix()`):
 
 1. `ConnectionModule` — DB (`request.container.resolve("db")`)
 2. `EventBusModule`
-3. `SessionModule` — cookies + `sessionService` (no HTTP list routes)
-4. **`options.modules`** — app modules (`DocumentationModule`, `UserModule`, `SessionsModule`, …)
+3. **`options.modules`** — app modules (`DocumentationModule`, `UserModule`, `RolesModule`, …)
+4. `SessionModule` — cookies + `sessionService` + `GET /sessions`
 5. `AuthModule` — `/auth/*` + populates `request.locals.user`
 
-**OpenAPI / codegen:** `@fastify/swagger` is registered inside `DocumentationModule`. Only routes registered **after** that module appear in `/openapi.json`. Put list/CRUD modules in `options.modules` (after docs), not in the built-in early slots. That is why `SessionsModule` is separate from `SessionModule`.
+**OpenAPI / codegen:** `@fastify/swagger` is registered inside `DocumentationModule`. Only routes registered **after** that module appear in `/openapi.json`. Put list/CRUD modules in `options.modules` (after docs). `SessionModule` is built-in but registered **after** `options.modules` so its `/sessions` routes still appear in the OpenAPI doc when `DocumentationModule` is first in the list.
 
 ### `register(context)`
 
@@ -124,7 +139,7 @@ async register(context: ModuleRegistrationContext) {
 Rules:
 
 - Call `super.register(context)` **last** when the module has HTTP routes.
-- DI-only modules (`ConnectionModule`, `SessionModule`, `EventBusModule`) skip `super.register`.
+- DI-only modules (`ConnectionModule`, `EventBusModule`) skip `super.register`.
 - Prefer registering dependencies before routes so handlers can resolve them immediately.
 - `context.app` is the Fastify instance; `context.container` is the root Awilix container.
 
@@ -301,12 +316,13 @@ modules: [
 pnpm --filter @plank/client codegen
 ```
 
-Built-in modules (`ConnectionModule`, `EventBusModule`, `SessionModule`, `AuthModule`) are registered inside `PlankServer.start()` — do not push those into `options.modules`. App feature modules (`UserModule`, `SessionsModule`, `RolesModule`, …) always go in `options.modules`.
+Built-in modules (`ConnectionModule`, `EventBusModule`, `SessionModule`, `AuthModule`) are registered inside `PlankServer.start()` — do not push those into `options.modules`. App feature modules (`UserModule`, `RolesModule`, …) always go in `options.modules`.
 
 ### Request context
 
 - `request.container` — request-scoped Awilix scope (created `onRequest`, disposed `onResponse`)
-- `request.locals.user` — set by `AuthModule` when a session cookie verifies (`null` otherwise)
+- `request.locals.user` — set by `AuthModule` when a session cookie verifies (`null` otherwise); includes `permissions: Permission[]`
+- `request.routeOptions.config.allow` — optional `Permission[]` declared on the route (see Route files); not enforced yet
 - Root `context.container` — use only during `register()` (bootstrap), not inside handlers
 
 ## Web app conventions (`plank-web`)
@@ -416,7 +432,7 @@ Reference implementations:
 Paths:
 
 - API users: `packages/plank-server/src/modules/user/`
-- API sessions: `packages/plank-server/src/modules/sessions/`
+- API sessions: `packages/plank-server/src/modules/session/`
 - API roles: `packages/plank-server/src/modules/roles/`
 - DB users: `packages/plank-db/src/queries/users.ts`
 - DB sessions: `packages/plank-db/src/queries/sessions.ts`
@@ -424,6 +440,7 @@ Paths:
 - Columns/filters: `apps/plank-web/src/common/tables/`
 - Pages: `apps/plank-web/src/features/dashboard/components/`
 - URL state: `packages/plank-ui/src/hooks/use-search-params.ts`
+- Query error empty: `packages/plank-ui/src/components/query-error.tsx`
 
 ### 1. Backend list endpoint
 
@@ -520,6 +537,10 @@ const offset = (page - 1) * perPage;
           >
             <DataTable.Content
               isLoading={isLoading || isFetching}
+              error={error}
+              onRetry={() => {
+                void refetch();
+              }}
               border
               className="border-0"
             />
@@ -554,7 +575,7 @@ URL keys (via nuqs):
 Fetch with generated options + credentials:
 
 ```tsx
-useQuery({
+const { data, isLoading, isFetching, error, refetch } = useQuery({
   ...getXOptions({
     query: {
       ...filtersToQuery(filters),
@@ -566,6 +587,8 @@ useQuery({
   }),
 });
 ```
+
+Pass `error` / `onRetry` into `DataTable.Content` so failed fetches render `QueryError` (Empty-based) instead of an empty table.
 
 Reset `page` to `1` when filters or `perPage` change.
 
@@ -590,3 +613,4 @@ Do not put mutation logic inside `common/tables/*` — only columns and filterab
 - Table UI state (sort / filters / page) lives in the URL via `@plank/ui/hooks` search-param hooks — not local `useState`.
 - Wrap scrollable table bodies in `ScrollableProvider` + `Scrollable` so pagination can `scrollToTop`.
 - Use `credentials: "include"` for authenticated API calls from the web app.
+- Wire list query `error` + `refetch` into `DataTable.Content` (`error` / `onRetry`). Failed fetches render `@plank/ui/components/query-error` (`QueryError`, built on Empty). Reuse `QueryError` for other remote empty/error panels outside tables.

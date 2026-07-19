@@ -19,6 +19,9 @@ const SessionItem = Type.Object({
 });
 
 export const GET = route({
+  config: {
+    allow: ["read:all"],
+  },
   schema: {
     tags: ["Sessions"],
     summary: "List sessions",

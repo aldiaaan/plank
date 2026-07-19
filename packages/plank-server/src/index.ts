@@ -2,7 +2,6 @@ export { PlankServer } from "./server";
 export { HealthcheckModule } from "./modules/healthcheck/healthcheck.module";
 export { DocumentationModule } from "./modules/documentation/documentation.module";
 export { UserModule } from "./modules/user/user.module";
-export { SessionsModule } from "./modules/sessions/sessions.module";
 export { RolesModule } from "./modules/roles/roles.module";
 export { route as defineRoute, ServerModule } from "./server/module";
 export type {

@@ -47,6 +47,7 @@ import {
   CommandItem,
   CommandList,
 } from "./command";
+import { QueryError } from "./query-error";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -156,6 +157,10 @@ export type DataTableContentProps = {
   className?: string;
   border?: boolean;
   isLoading?: boolean;
+  /** Remote fetch error — shown instead of rows / empty state when set. */
+  error?: unknown;
+  /** Retry handler for the error empty state (e.g. React Query `refetch`). */
+  onRetry?: () => void;
 };
 
 export type DataTableContextType<TData = unknown> = {
@@ -218,11 +223,12 @@ const MotionTableRow = motion.create(TableRow);
  * Renders the table header and body.
  *
  * - `isLoading` shows skeleton placeholder rows while data is loading.
+ * - `error` + optional `onRetry` shows `QueryError` instead of rows.
  * - `border` adds right borders to cells/headers.
- * - Renders "No results." when there are no rows and not loading.
+ * - Renders "No results." when there are no rows and not loading/error.
  */
 export function DataTableContent(props: DataTableContentProps) {
-  const { className, border } = props;
+  const { className, border, error, onRetry } = props;
 
   const { table } = useDataTable();
 
@@ -254,107 +260,133 @@ export function DataTableContent(props: DataTableContentProps) {
     ));
   };
 
+  const renderBody = () => {
+    const rows = table.getRowModel().rows;
+
+    if (rows?.length) {
+      return rows.map((row, index) => (
+        <AnimatePresence key={`${row.id}.${index}`}>
+          <MotionTableRow
+            data-row-id={row.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              // easeIn function
+              delay: index / 50,
+            }}
+            key={`${row.id}.${index}`}
+            data-state={row.getIsSelected() && "selected"}
+            className={cn(row.id === "select" && "pl-0")}
+          >
+            {row.getVisibleCells().map((cell, index) => (
+              <TableCell
+                className={cn(
+                  border && "border-r",
+                  index === row.getVisibleCells().length - 1 && "border-r-0",
+                  "text-foreground/90 ",
+                )}
+                key={cell.id}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </TableCell>
+            ))}
+          </MotionTableRow>
+        </AnimatePresence>
+      ));
+    }
+
+    if (props.isLoading) {
+      return renderPlaceholder();
+    }
+
+    return (
+      <TableRow>
+        <TableCell
+          colSpan={table.getAllColumns().length}
+          className="h-24 text-center"
+        >
+          No results.
+        </TableCell>
+      </TableRow>
+    );
+  };
+
+  const header = (
+    <TableHeader className="[&_tr]:border-b-0">
+      {table.getHeaderGroups().map((headerGroup) => (
+        <TableRow
+          key={headerGroup.id}
+          className={cn(
+            "border-b-0 hover:bg-background",
+            border && "[&_th]:border-r [&_th:last-child]:border-0",
+          )}
+        >
+          {headerGroup.headers.map((header) => {
+            const canSort = header.column.getCanSort();
+            return (
+              <TableHead
+                onClick={
+                  canSort
+                    ? header.column.getToggleSortingHandler()
+                    : undefined
+                }
+                className={cn(
+                  "sticky top-0 z-20 bg-background tracking-tight select-none shadow-[inset_0_-1px_0_0_var(--border)]",
+                  canSort && "cursor-pointer",
+                )}
+                key={header.id}
+                style={{
+                  width:
+                    header.getSize() !== 0 ? header.getSize() : undefined,
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                  {{
+                    asc: <ArrowUpIcon className="size-4" />,
+                    desc: <ArrowDownIcon className="size-4" />,
+                  }[header.column.getIsSorted() as string] ??
+                    (canSort ? (
+                      <ArrowUpDownIcon className="size-4" />
+                    ) : null)}
+                </div>
+              </TableHead>
+            );
+          })}
+        </TableRow>
+      ))}
+    </TableHeader>
+  );
+
+  if (error && !props.isLoading) {
+    return (
+      <DataTableContext.Provider value={{ table }}>
+        <div
+          className={cn(
+            "flex min-h-full flex-col",
+            className,
+          )}
+        >
+          <Table>{header}</Table>
+          <div className="flex flex-1 items-center justify-center">
+            <QueryError error={error} onRetry={onRetry} />
+          </div>
+        </div>
+      </DataTableContext.Provider>
+    );
+  }
+
   return (
     <DataTableContext.Provider value={{ table }}>
       <div className={cn(className)}>
         <Table>
-          <TableHeader className="[&_tr]:border-b-0">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className={cn(
-                  "border-b-0 hover:bg-background",
-                  border && "[&_th]:border-r [&_th:last-child]:border-0",
-                )}
-              >
-                {headerGroup.headers.map((header) => {
-                  const canSort = header.column.getCanSort();
-                  return (
-                    <TableHead
-                      onClick={
-                        canSort
-                          ? header.column.getToggleSortingHandler()
-                          : undefined
-                      }
-                      className={cn(
-                        "sticky top-0 z-20 bg-background tracking-tight select-none shadow-[inset_0_-1px_0_0_var(--border)]",
-                        canSort && "cursor-pointer",
-                      )}
-                      key={header.id}
-                      style={{
-                        width:
-                          header.getSize() !== 0 ? header.getSize() : undefined,
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                        {{
-                          asc: <ArrowUpIcon className="size-4" />,
-                          desc: <ArrowDownIcon className="size-4" />,
-                        }[header.column.getIsSorted() as string] ??
-                          (canSort ? (
-                            <ArrowUpDownIcon className="size-4" />
-                          ) : null)}
-                      </div>
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
-                <AnimatePresence key={`${row.id}.${index}`}>
-                  <MotionTableRow
-                    data-row-id={row.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      // easeIn function
-                      delay: index / 50,
-                    }}
-                    key={`${row.id}.${index}`}
-                    data-state={row.getIsSelected() && "selected"}
-                    className={cn(row.id === "select" && "pl-0")}
-                  >
-                    {row.getVisibleCells().map((cell, index) => (
-                      <TableCell
-                        className={cn(
-                          border && "border-r",
-                          index === row.getVisibleCells().length - 1 &&
-                            "border-r-0",
-                          "text-foreground/90 ",
-                        )}
-                        key={cell.id}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </MotionTableRow>
-                </AnimatePresence>
-              ))
-            ) : props.isLoading ? (
-              renderPlaceholder()
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={table.getAllColumns().length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          {header}
+          <TableBody>{renderBody()}</TableBody>
         </Table>
       </div>
     </DataTableContext.Provider>

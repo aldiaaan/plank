@@ -102,4 +102,8 @@ declare module "fastify" {
     container: AwilixContainer<ModuleRegistrationCradle>;
     locals: RequestLocals;
   }
+
+  interface FastifyContextConfig {
+    allow?: Permission[];
+  }
 }

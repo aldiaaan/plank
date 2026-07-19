@@ -47,13 +47,6 @@ export const postUsers = <ThrowOnError extends boolean = false>(options: Options
 });
 
 /**
- * List sessions
- *
- * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
- */
-export const getSessions = <ThrowOnError extends boolean = false>(options?: Options<GetSessionsData, ThrowOnError>): RequestResult<GetSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetSessionsResponses, unknown, ThrowOnError>({ url: '/sessions', ...options });
-
-/**
  * List roles
  *
  * Paginated, filterable list of roles. Used by the manage-roles table and when assigning a role to a user.
@@ -73,6 +66,13 @@ export const postRoles = <ThrowOnError extends boolean = false>(options: Options
         ...options.headers
     }
 });
+
+/**
+ * List sessions
+ *
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
+ */
+export const getSessions = <ThrowOnError extends boolean = false>(options?: Options<GetSessionsData, ThrowOnError>): RequestResult<GetSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetSessionsResponses, unknown, ThrowOnError>({ url: '/sessions', ...options });
 
 /**
  * Log in

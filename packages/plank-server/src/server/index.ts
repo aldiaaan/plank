@@ -95,11 +95,13 @@ export class PlankServer {
       container: this.container,
     };
 
+    // SessionModule is after options.modules so DocumentationModule (swagger)
+    // is registered first and GET /sessions appears in /openapi.json.
     for (const module of [
       new ConnectionModule({ databaseUrl: this.options.databaseUrl }),
       new EventBusModule(),
-      new SessionModule(),
       ...this.options.modules,
+      new SessionModule(),
       new AuthModule({
         initialSuperAdminEmail: this.options.superAdminEmail,
         initialSuperAdminPassword: this.options.superAdminPassword,

@@ -159,58 +159,6 @@ export const postUsersMutation = (options?: Partial<Options<PostUsersData>>): Us
     return mutationOptions;
 };
 
-export const getSessionsQueryKey = (options?: Options<GetSessionsData>) => createQueryKey('getSessions', options);
-
-/**
- * List sessions
- *
- * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
- */
-export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryOptions<GetSessionsResponse, DefaultError, GetSessionsResponse, ReturnType<typeof getSessionsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getSessions({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getSessionsQueryKey(options)
-});
-
-export const getSessionsInfiniteQueryKey = (options?: Options<GetSessionsData>): QueryKey<Options<GetSessionsData>> => createQueryKey('getSessions', options, true);
-
-/**
- * List sessions
- *
- * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
- */
-export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) => {
-    const opts = infiniteQueryOptions<GetSessionsResponse, DefaultError, InfiniteData<GetSessionsResponse>, QueryKey<Options<GetSessionsData>>, number | Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await getSessions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSessionsInfiniteQueryKey(options)
-    });
-    return opts as Omit<typeof opts, 'initialData'>;
-};
-
 export const getRolesQueryKey = (options?: Options<GetRolesData>) => createQueryKey('getRoles', options);
 
 /**
@@ -280,6 +228,58 @@ export const postRolesMutation = (options?: Partial<Options<PostRolesData>>): Us
         }
     };
     return mutationOptions;
+};
+
+export const getSessionsQueryKey = (options?: Options<GetSessionsData>) => createQueryKey('getSessions', options);
+
+/**
+ * List sessions
+ *
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
+ */
+export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryOptions<GetSessionsResponse, DefaultError, GetSessionsResponse, ReturnType<typeof getSessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSessionsQueryKey(options)
+});
+
+export const getSessionsInfiniteQueryKey = (options?: Options<GetSessionsData>): QueryKey<Options<GetSessionsData>> => createQueryKey('getSessions', options, true);
+
+/**
+ * List sessions
+ *
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, filter by user ids, created/expiry date ranges, and multi-column sorting.
+ */
+export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) => {
+    const opts = infiniteQueryOptions<GetSessionsResponse, DefaultError, InfiniteData<GetSessionsResponse>, QueryKey<Options<GetSessionsData>>, number | Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getSessions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getSessionsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
 };
 
 /**

@@ -7,11 +7,17 @@ import { SessionService } from "./session.service";
 export class SessionModule extends ServerModule {
   name = "session";
 
+  protected routePrefix(): string {
+    return "/sessions";
+  }
+
   async register(context: ModuleRegistrationContext) {
     await context.app.register(cookie);
 
     context.container.register({
       sessionService: asClass(SessionService),
     });
+
+    await super.register(context);
   }
 }

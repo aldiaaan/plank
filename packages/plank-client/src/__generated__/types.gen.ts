@@ -157,78 +157,6 @@ export type PostUsersResponses = {
 
 export type PostUsersResponse = PostUsersResponses[keyof PostUsersResponses];
 
-export type GetSessionsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Case-insensitive match against user name or email
-         */
-        search?: string;
-        /**
-         * Only sessions belonging to any of these user ids
-         */
-        userIds?: Array<string>;
-        /**
-         * Include sessions created on or after this date (UTC)
-         */
-        createdAtGte?: string;
-        /**
-         * Include sessions created on or before this date (UTC)
-         */
-        createdAtLte?: string;
-        /**
-         * Include sessions expiring on or after this date (UTC)
-         */
-        expiresAtGte?: string;
-        /**
-         * Include sessions expiring on or before this date (UTC)
-         */
-        expiresAtLte?: string;
-        /**
-         * Sort columns in priority order (id + desc)
-         */
-        sorting?: Array<{
-            id: string;
-            desc: boolean;
-        }>;
-        /**
-         * Page size
-         */
-        limit?: number;
-        /**
-         * Number of rows to skip
-         */
-        offset?: number;
-    };
-    url: '/sessions';
-};
-
-export type GetSessionsResponses = {
-    /**
-     * Default Response
-     */
-    200: {
-        message: string;
-        result: {
-            items: Array<{
-                id: string;
-                userId: string;
-                userEmail: string;
-                userName: string;
-                expiresAt: string;
-                createdAt: string;
-                updatedAt: string;
-            }>;
-            total: number;
-            limit: number;
-            offset: number;
-        };
-    };
-};
-
-export type GetSessionsResponse = GetSessionsResponses[keyof GetSessionsResponses];
-
 export type GetRolesData = {
     body?: never;
     path?: never;
@@ -325,6 +253,78 @@ export type PostRolesResponses = {
 };
 
 export type PostRolesResponse = PostRolesResponses[keyof PostRolesResponses];
+
+export type GetSessionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Case-insensitive match against user name or email
+         */
+        search?: string;
+        /**
+         * Only sessions belonging to any of these user ids
+         */
+        userIds?: Array<string>;
+        /**
+         * Include sessions created on or after this date (UTC)
+         */
+        createdAtGte?: string;
+        /**
+         * Include sessions created on or before this date (UTC)
+         */
+        createdAtLte?: string;
+        /**
+         * Include sessions expiring on or after this date (UTC)
+         */
+        expiresAtGte?: string;
+        /**
+         * Include sessions expiring on or before this date (UTC)
+         */
+        expiresAtLte?: string;
+        /**
+         * Sort columns in priority order (id + desc)
+         */
+        sorting?: Array<{
+            id: string;
+            desc: boolean;
+        }>;
+        /**
+         * Page size
+         */
+        limit?: number;
+        /**
+         * Number of rows to skip
+         */
+        offset?: number;
+    };
+    url: '/sessions';
+};
+
+export type GetSessionsResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            items: Array<{
+                id: string;
+                userId: string;
+                userEmail: string;
+                userName: string;
+                expiresAt: string;
+                createdAt: string;
+                updatedAt: string;
+            }>;
+            total: number;
+            limit: number;
+            offset: number;
+        };
+    };
+};
+
+export type GetSessionsResponse = GetSessionsResponses[keyof GetSessionsResponses];
 
 export type PostAuthLoginData = {
     body: {
