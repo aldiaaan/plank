@@ -14,6 +14,15 @@ import { Toaster } from "@plank/ui/components/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
+import type { Route } from "./+types/root";
+
+export const meta: Route.MetaFunction = () => [
+  { title: "Plank" },
+  {
+    name: "description",
+    content: "Plank application.",
+  },
+];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   return {};

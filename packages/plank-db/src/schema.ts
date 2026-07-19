@@ -77,7 +77,22 @@ export const accounts = pgTable(
   ],
 );
 
-export const permissionEnum = pgEnum("permission", ["write:all", "read:all"]);
+export const permissionEnum = pgEnum("permission", [
+  "write:all",
+  "read:all",
+  "admin:create:users",
+  "admin:read:users",
+  "admin:update:users",
+  "admin:delete:users",
+  "admin:create:roles",
+  "admin:read:roles",
+  "admin:update:roles",
+  "admin:delete:roles",
+  "admin:create:permissions",
+  "admin:read:permissions",
+  "admin:update:permissions",
+  "admin:delete:permissions",
+]);
 export type Permission = (typeof permissionEnum.enumValues)[number];
 
 export const roles = pgTable("roles", {

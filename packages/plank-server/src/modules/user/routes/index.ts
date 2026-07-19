@@ -39,16 +39,53 @@ function isUniqueViolation(error: unknown): boolean {
 
 export const GET = route({
   schema: {
+    tags: ["Users"],
+    summary: "List users",
+    description:
+      "Returns a paginated list of users. Supports search by name/email, permission filters, registration date range, and multi-column sorting.",
     querystring: Type.Object({
-      search: Type.Optional(Type.String()),
-      permissions: Type.Optional(Type.Array(PermissionSchema)),
-      createdAtGte: Type.Optional(Type.String({ format: "date" })),
-      createdAtLte: Type.Optional(Type.String({ format: "date" })),
-      sorting: Type.Optional(Type.Array(SortInputSchema)),
-      limit: Type.Optional(
-        Type.Integer({ minimum: 1, maximum: 100, default: 20 }),
+      search: Type.Optional(
+        Type.String({
+          description: "Case-insensitive match against name or email",
+        }),
       ),
-      offset: Type.Optional(Type.Integer({ minimum: 0, default: 0 })),
+      permissions: Type.Optional(
+        Type.Array(PermissionSchema, {
+          description: "Only users that have all of these permissions",
+        }),
+      ),
+      createdAtGte: Type.Optional(
+        Type.String({
+          format: "date",
+          description: "Include users created on or after this date (UTC)",
+        }),
+      ),
+      createdAtLte: Type.Optional(
+        Type.String({
+          format: "date",
+          description: "Include users created on or before this date (UTC)",
+        }),
+      ),
+      sorting: Type.Optional(
+        Type.Array(SortInputSchema, {
+          description: "Sort columns in priority order (id + desc)",
+        }),
+      ),
+      limit: Type.Optional(
+        Type.Integer({
+          minimum: 1,
+          maximum: 100,
+          default: 20,
+          description: "Page size",
+        }),
+      ),
+      offset: Type.Optional(
+        Type.Integer({
+          minimum: 0,
+          default: 0,
+          description: "Number of rows to skip",
+        }),
+      ),
     }),
     response: {
       200: SuccessResponse(
@@ -101,11 +138,21 @@ export const GET = route({
 
 export const POST = route({
   schema: {
+    tags: ["Users"],
+    summary: "Create user",
+    description:
+      "Creates a user account with the given role and hashed password. Returns 409 if the email is already taken, 400 if the role does not exist.",
     body: Type.Object({
-      name: Type.String({ minLength: 1 }),
+      name: Type.String({ minLength: 1, description: "Display name" }),
       email: Type.String({ format: "email" }),
-      password: Type.String({ minLength: 8 }),
-      roleId: Type.String({ format: "uuid" }),
+      password: Type.String({
+        minLength: 8,
+        description: "Plaintext password (hashed before storage)",
+      }),
+      roleId: Type.String({
+        format: "uuid",
+        description: "Existing role id from GET /roles",
+      }),
     }),
     response: {
       201: SuccessResponse(UserItem),

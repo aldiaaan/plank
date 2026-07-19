@@ -20,17 +20,60 @@ const SessionItem = Type.Object({
 
 export const GET = route({
   schema: {
+    tags: ["Sessions"],
+    summary: "List sessions",
+    description:
+      "Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.",
     querystring: Type.Object({
-      search: Type.Optional(Type.String()),
-      createdAtGte: Type.Optional(Type.String({ format: "date" })),
-      createdAtLte: Type.Optional(Type.String({ format: "date" })),
-      expiresAtGte: Type.Optional(Type.String({ format: "date" })),
-      expiresAtLte: Type.Optional(Type.String({ format: "date" })),
-      sorting: Type.Optional(Type.Array(SortInputSchema)),
-      limit: Type.Optional(
-        Type.Integer({ minimum: 1, maximum: 100, default: 20 }),
+      search: Type.Optional(
+        Type.String({
+          description: "Case-insensitive match against user name or email",
+        }),
       ),
-      offset: Type.Optional(Type.Integer({ minimum: 0, default: 0 })),
+      createdAtGte: Type.Optional(
+        Type.String({
+          format: "date",
+          description: "Include sessions created on or after this date (UTC)",
+        }),
+      ),
+      createdAtLte: Type.Optional(
+        Type.String({
+          format: "date",
+          description: "Include sessions created on or before this date (UTC)",
+        }),
+      ),
+      expiresAtGte: Type.Optional(
+        Type.String({
+          format: "date",
+          description: "Include sessions expiring on or after this date (UTC)",
+        }),
+      ),
+      expiresAtLte: Type.Optional(
+        Type.String({
+          format: "date",
+          description: "Include sessions expiring on or before this date (UTC)",
+        }),
+      ),
+      sorting: Type.Optional(
+        Type.Array(SortInputSchema, {
+          description: "Sort columns in priority order (id + desc)",
+        }),
+      ),
+      limit: Type.Optional(
+        Type.Integer({
+          minimum: 1,
+          maximum: 100,
+          default: 20,
+          description: "Page size",
+        }),
+      ),
+      offset: Type.Optional(
+        Type.Integer({
+          minimum: 0,
+          default: 0,
+          description: "Number of rows to skip",
+        }),
+      ),
     }),
     response: {
       200: SuccessResponse(

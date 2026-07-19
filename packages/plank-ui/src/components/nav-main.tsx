@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -14,33 +14,33 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@plank/ui/components/sidebar";
-import { ChevronRightIcon } from "lucide-react";
+import { ArrowUpRightIcon, ChevronRightIcon } from "lucide-react";
+import type { AppSidebarNavItem } from "@plank/ui/components/app-sidebar";
+
+function isExternalLink(item: { url: string; external?: boolean }) {
+  return (
+    item.external === true ||
+    item.url.startsWith("http://") ||
+    item.url.startsWith("https://")
+  );
+}
 
 export function NavMain({
   label,
   items,
 }: {
   label?: string;
-  items: {
-    title: string;
-    url: string;
-    icon?: React.ReactNode;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-      icon?: React.ReactNode;
-    }[];
-  }[];
+  items: AppSidebarNavItem[];
 }) {
   const location = useLocation();
 
   return (
-    <SidebarGroup>
+    <SidebarGroup className={label ? undefined : "py-0"}>
       {label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
-      <SidebarMenu>
+      <SidebarMenu className="gap-0">
         {items.map((item) => {
           const hasChildren = !!item.items?.length;
+          const external = isExternalLink(item);
 
           if (!hasChildren) {
             return (
@@ -48,12 +48,20 @@ export function NavMain({
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
-                  isActive={location.pathname === item.url}
+                  isActive={!external && location.pathname === item.url}
                 >
-                  <NavLink to={item.url} viewTransition>
+                  <Link
+                    to={item.url}
+                    viewTransition={!external}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
+                  >
                     {item.icon}
                     <span>{item.title}</span>
-                  </NavLink>
+                    {external ? (
+                      <ArrowUpRightIcon className="ml-auto size-4 shrink-0 opacity-60" />
+                    ) : null}
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
@@ -65,7 +73,11 @@ export function NavMain({
               asChild
               defaultOpen={
                 item.isActive ||
-                item.items?.some((subItem) => location.pathname === subItem.url)
+                item.items?.some(
+                  (subItem) =>
+                    !isExternalLink(subItem) &&
+                    location.pathname === subItem.url,
+                )
               }
               className="group/collapsible"
             >
@@ -79,19 +91,35 @@ export function NavMain({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton
-                          asChild
-                          isActive={location.pathname === subItem.url}
-                        >
-                          <NavLink to={subItem.url} viewTransition>
-                            {subItem.icon}
-                            <span>{subItem.title}</span>
-                          </NavLink>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {item.items?.map((subItem) => {
+                      const subExternal = isExternalLink(subItem);
+
+                      return (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={
+                              !subExternal && location.pathname === subItem.url
+                            }
+                          >
+                            <Link
+                              to={subItem.url}
+                              viewTransition={!subExternal}
+                              target={subExternal ? "_blank" : undefined}
+                              rel={
+                                subExternal ? "noopener noreferrer" : undefined
+                              }
+                            >
+                              {subItem.icon}
+                              <span>{subItem.title}</span>
+                              {subExternal ? (
+                                <ArrowUpRightIcon className="ml-auto size-4 shrink-0 opacity-60" />
+                              ) : null}
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>

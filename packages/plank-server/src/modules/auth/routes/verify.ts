@@ -5,8 +5,15 @@ import { SuccessResponse } from "../../../server/responses";
 
 export const POST = route({
   schema: {
+    tags: ["Auth"],
+    summary: "Verify session",
+    description:
+      "Validates a session cookie token and returns the authenticated user with permissions. Returns 401 when the session is missing, expired, or revoked.",
     body: Type.Object({
-      cookie: Type.String({ minLength: 1 }),
+      cookie: Type.String({
+        minLength: 1,
+        description: "Raw session cookie value",
+      }),
     }),
     response: {
       200: SuccessResponse(

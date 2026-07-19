@@ -41,6 +41,11 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
 
 export const getPingQueryKey = (options?: Options<GetPingData>) => createQueryKey('getPing', options);
 
+/**
+ * Ping
+ *
+ * Lightweight health check. Optionally echoes a name and returns a small sample of users to verify DB connectivity.
+ */
 export const getPingOptions = (options?: Options<GetPingData>) => queryOptions<GetPingResponse, DefaultError, GetPingResponse, ReturnType<typeof getPingQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await getPing({
@@ -56,6 +61,11 @@ export const getPingOptions = (options?: Options<GetPingData>) => queryOptions<G
 
 export const getUsersQueryKey = (options?: Options<GetUsersData>) => createQueryKey('getUsers', options);
 
+/**
+ * List users
+ *
+ * Returns a paginated list of users. Supports search by name/email, permission filters, registration date range, and multi-column sorting.
+ */
 export const getUsersOptions = (options?: Options<GetUsersData>) => queryOptions<GetUsersResponse, DefaultError, GetUsersResponse, ReturnType<typeof getUsersQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await getUsers({
@@ -100,6 +110,11 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
 
 export const getUsersInfiniteQueryKey = (options?: Options<GetUsersData>): QueryKey<Options<GetUsersData>> => createQueryKey('getUsers', options, true);
 
+/**
+ * List users
+ *
+ * Returns a paginated list of users. Supports search by name/email, permission filters, registration date range, and multi-column sorting.
+ */
 export const getUsersInfiniteOptions = (options?: Options<GetUsersData>) => {
     const opts = infiniteQueryOptions<GetUsersResponse, DefaultError, InfiniteData<GetUsersResponse>, QueryKey<Options<GetUsersData>>, number | Pick<QueryKey<Options<GetUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -125,6 +140,11 @@ export const getUsersInfiniteOptions = (options?: Options<GetUsersData>) => {
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+/**
+ * Create user
+ *
+ * Creates a user account with the given role and hashed password. Returns 409 if the email is already taken, 400 if the role does not exist.
+ */
 export const postUsersMutation = (options?: Partial<Options<PostUsersData>>): UseMutationOptions<PostUsersResponse, PostUsersError, Options<PostUsersData>> => {
     const mutationOptions: UseMutationOptions<PostUsersResponse, PostUsersError, Options<PostUsersData>> = {
         mutationFn: async (fnOptions) => {
@@ -141,6 +161,11 @@ export const postUsersMutation = (options?: Partial<Options<PostUsersData>>): Us
 
 export const getSessionsQueryKey = (options?: Options<GetSessionsData>) => createQueryKey('getSessions', options);
 
+/**
+ * List sessions
+ *
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.
+ */
 export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryOptions<GetSessionsResponse, DefaultError, GetSessionsResponse, ReturnType<typeof getSessionsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await getSessions({
@@ -156,6 +181,11 @@ export const getSessionsOptions = (options?: Options<GetSessionsData>) => queryO
 
 export const getSessionsInfiniteQueryKey = (options?: Options<GetSessionsData>): QueryKey<Options<GetSessionsData>> => createQueryKey('getSessions', options, true);
 
+/**
+ * List sessions
+ *
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.
+ */
 export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) => {
     const opts = infiniteQueryOptions<GetSessionsResponse, DefaultError, InfiniteData<GetSessionsResponse>, QueryKey<Options<GetSessionsData>>, number | Pick<QueryKey<Options<GetSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -183,6 +213,11 @@ export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) =
 
 export const getRolesQueryKey = (options?: Options<GetRolesData>) => createQueryKey('getRoles', options);
 
+/**
+ * List roles
+ *
+ * Paginated, filterable list of roles. Used by the manage-roles table and when assigning a role to a user.
+ */
 export const getRolesOptions = (options?: Options<GetRolesData>) => queryOptions<GetRolesResponse, DefaultError, GetRolesResponse, ReturnType<typeof getRolesQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
         const { data } = await getRoles({
@@ -196,6 +231,43 @@ export const getRolesOptions = (options?: Options<GetRolesData>) => queryOptions
     queryKey: getRolesQueryKey(options)
 });
 
+export const getRolesInfiniteQueryKey = (options?: Options<GetRolesData>): QueryKey<Options<GetRolesData>> => createQueryKey('getRoles', options, true);
+
+/**
+ * List roles
+ *
+ * Paginated, filterable list of roles. Used by the manage-roles table and when assigning a role to a user.
+ */
+export const getRolesInfiniteOptions = (options?: Options<GetRolesData>) => {
+    const opts = infiniteQueryOptions<GetRolesResponse, DefaultError, InfiniteData<GetRolesResponse>, QueryKey<Options<GetRolesData>>, number | Pick<QueryKey<Options<GetRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<GetRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getRoles({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getRolesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Log in
+ *
+ * Authenticates with email and password, creates a session, and sets the httpOnly session cookie. Returns 401 when credentials are invalid.
+ */
 export const postAuthLoginMutation = (options?: Partial<Options<PostAuthLoginData>>): UseMutationOptions<PostAuthLoginResponse, PostAuthLoginError, Options<PostAuthLoginData>> => {
     const mutationOptions: UseMutationOptions<PostAuthLoginResponse, PostAuthLoginError, Options<PostAuthLoginData>> = {
         mutationFn: async (fnOptions) => {
@@ -210,6 +282,11 @@ export const postAuthLoginMutation = (options?: Partial<Options<PostAuthLoginDat
     return mutationOptions;
 };
 
+/**
+ * Sign out
+ *
+ * Revokes the given session (if still valid) and clears the session cookie. Always succeeds so the client can clear local auth state.
+ */
 export const postAuthSignoutMutation = (options?: Partial<Options<PostAuthSignoutData>>): UseMutationOptions<PostAuthSignoutResponse, DefaultError, Options<PostAuthSignoutData>> => {
     const mutationOptions: UseMutationOptions<PostAuthSignoutResponse, DefaultError, Options<PostAuthSignoutData>> = {
         mutationFn: async (fnOptions) => {
@@ -224,6 +301,11 @@ export const postAuthSignoutMutation = (options?: Partial<Options<PostAuthSignou
     return mutationOptions;
 };
 
+/**
+ * Verify session
+ *
+ * Validates a session cookie token and returns the authenticated user with permissions. Returns 401 when the session is missing, expired, or revoked.
+ */
 export const postAuthVerifyMutation = (options?: Partial<Options<PostAuthVerifyData>>): UseMutationOptions<PostAuthVerifyResponse, PostAuthVerifyError, Options<PostAuthVerifyData>> => {
     const mutationOptions: UseMutationOptions<PostAuthVerifyResponse, PostAuthVerifyError, Options<PostAuthVerifyData>> = {
         mutationFn: async (fnOptions) => {

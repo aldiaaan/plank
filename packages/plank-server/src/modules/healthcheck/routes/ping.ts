@@ -3,7 +3,9 @@ import { route } from "../../../server/module";
 import { listUsers } from "@plank/db/queries/users";
 
 const Querystring = Type.Object({
-  name: Type.Optional(Type.String()),
+  name: Type.Optional(
+    Type.String({ description: "Optional name echoed in the pong message" }),
+  ),
 });
 
 const Response = Type.Object({
@@ -20,6 +22,10 @@ const Response = Type.Object({
 
 export const GET = route({
   schema: {
+    tags: ["Health"],
+    summary: "Ping",
+    description:
+      "Lightweight health check. Optionally echoes a name and returns a small sample of users to verify DB connectivity.",
     querystring: Querystring,
     response: {
       200: Response,

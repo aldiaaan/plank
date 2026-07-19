@@ -751,12 +751,22 @@ export type DataTableSelectFilterButtonProps = {
   options: Array<DataTableSelectFilterable["options"][number]>;
   onDelete?: () => void;
   children?: React.ReactNode;
+  /** When false, only one option can be selected and the value is stored as `eq`. */
+  multiple?: boolean;
 };
 
 function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
-  const { value, onChange, options, onDelete, children } = props;
+  const {
+    value,
+    onChange,
+    options,
+    onDelete,
+    children,
+    multiple = true,
+  } = props;
 
   const [open, setOpen] = useState(false);
+  const showSearch = multiple || options.length > 5;
 
   useEffect(() => {
     setOpen(true);
@@ -768,6 +778,14 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
     }
     setOpen(v);
   };
+
+  const selectedLabels = (value ?? [])
+    .map(
+      (id) =>
+        options.find((option) => String(option.id) === String(id))?.label ??
+        String(id),
+    )
+    .join(", ");
 
   return (
     <div className="flex items-stretch">
@@ -783,46 +801,72 @@ function DataTableSelectFilterButton(props: DataTableSelectFilterButtonProps) {
             {value && value.length > 0 ? (
               <>
                 <Separator orientation="vertical" />
-                {value.join(", ")}
+                <span className="font-normal">{selectedLabels}</span>
               </>
             ) : (
               <>
                 <Separator orientation="vertical" />
-                <p className="text-muted-foreground/50">
-                  Click to select options
+                <p className="font-normal text-muted-foreground/50">
+                  {multiple ? "Select options" : "Select option"}
                 </p>
               </>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="p-0" side="bottom" align="center">
-          <Command>
-            <CommandInput placeholder="Change status..." />
+        <PopoverContent
+          className="w-auto min-w-40 gap-0 p-0"
+          side="bottom"
+          align="start"
+          sideOffset={6}
+        >
+          <Command className="size-auto rounded-2xl">
+            {showSearch ? (
+              <CommandInput placeholder="Search..." />
+            ) : null}
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
-                {options.map((status) => (
-                  <CommandItem
-                    key={status.id}
-                    value={status.id}
-                    onSelect={(newValue) => {
-                      if (value?.includes(newValue)) {
-                        onChange?.({
-                          in: value?.filter((item) => item !== newValue),
-                        });
-                      } else {
-                        onChange?.({
-                          in: value ? [...value, newValue] : [newValue],
-                        });
-                      }
-                    }}
-                  >
-                    {status.label}
-                    {value?.includes(status.id) && (
-                      <CheckIcon className="size-4 ml-auto" />
-                    )}
-                  </CommandItem>
-                ))}
+                {options.map((option) => {
+                  const selected = value?.some(
+                    (item) => String(item) === String(option.id),
+                  );
+                  return (
+                    <CommandItem
+                      key={option.id}
+                      value={option.label}
+                      onSelect={() => {
+                        if (multiple) {
+                          if (selected) {
+                            onChange?.({
+                              in: value?.filter(
+                                (item) => String(item) !== String(option.id),
+                              ),
+                            });
+                          } else {
+                            onChange?.({
+                              in: value
+                                ? [...value, option.id]
+                                : [option.id],
+                            });
+                          }
+                          return;
+                        }
+
+                        if (selected) {
+                          onChange?.({ eq: undefined });
+                        } else {
+                          onChange?.({ eq: option.id });
+                          setOpen(false);
+                        }
+                      }}
+                    >
+                      {option.label}
+                      {selected ? (
+                        <CheckIcon className="ml-auto size-4" />
+                      ) : null}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             </CommandList>
           </Command>
@@ -995,7 +1039,6 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                   </DropdownMenuItem>
                 );
               case "multi-select":
-              case "select":
                 return (
                   <DropdownMenuItem
                     key={filterable.id}
@@ -1007,6 +1050,28 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
                             id: filterable.id,
                             value: {
                               in: [],
+                            },
+                          },
+                        ]);
+                      }
+                    }}
+                  >
+                    {filterable.icon && <filterable.icon className="size-4" />}
+                    {filterable.label}
+                  </DropdownMenuItem>
+                );
+              case "select":
+                return (
+                  <DropdownMenuItem
+                    key={filterable.id}
+                    onClick={() => {
+                      if (!value.some((item) => item.id === filterable.id)) {
+                        onChange([
+                          ...value,
+                          {
+                            id: filterable.id,
+                            value: {
+                              eq: undefined,
                             },
                           },
                         ]);
@@ -1071,14 +1136,43 @@ export function DataTableFilterButton(props: DataTableFilterButtonProps) {
               </DataTableDateFilterButton>
             );
           case "multi-select":
-          case "select":
             return (
               <DataTableSelectFilterButton
                 key={filter.id}
+                multiple
                 value={
                   itemValue?.in?.filter(
                     (item): item is string | number => item !== null,
                   ) ?? []
+                }
+                onChange={(newValue) => {
+                  onChange(
+                    value.map((item) => {
+                      if (item.id === filter.id) {
+                        return { id: filter.id, value: newValue };
+                      }
+                      return item;
+                    }),
+                  );
+                }}
+                options={filter.options}
+                onDelete={() => {
+                  onChange(value.filter((item) => item.id !== filter.id));
+                }}
+              >
+                {filter.icon && <filter.icon className="size-4" />}
+                {filter.label}
+              </DataTableSelectFilterButton>
+            );
+          case "select":
+            return (
+              <DataTableSelectFilterButton
+                key={filter.id}
+                multiple={false}
+                value={
+                  itemValue?.eq !== undefined && itemValue?.eq !== ""
+                    ? [itemValue.eq]
+                    : []
                 }
                 onChange={(newValue) => {
                   onChange(

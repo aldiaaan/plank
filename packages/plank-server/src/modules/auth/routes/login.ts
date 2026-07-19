@@ -9,6 +9,10 @@ import { InvalidCredentialsError } from "../errors";
 
 export const POST = route({
   schema: {
+    tags: ["Auth"],
+    summary: "Log in",
+    description:
+      "Authenticates with email and password, creates a session, and sets the httpOnly session cookie. Returns 401 when credentials are invalid.",
     body: Type.Object({
       email: Type.String({ format: "email" }),
       password: Type.String({ minLength: 1 }),

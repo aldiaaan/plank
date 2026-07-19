@@ -20,6 +20,15 @@ import {
 } from "../../../common/tables/users-management";
 import { Button } from "@plank/ui/components/button";
 import { Link } from "react-router";
+import type { Route } from "./+types/manage-users-page";
+
+export const meta: Route.MetaFunction = () => [
+  { title: "Manage Users | Plank" },
+  {
+    name: "description",
+    content: "Search and filter users by permissions and registration date.",
+  },
+];
 
 function filtersToQuery(filters: DataTableFilterValue[]) {
   const search = filters.find((filter) => filter.id === "search")?.value?.eq;

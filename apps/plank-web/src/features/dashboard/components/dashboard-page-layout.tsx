@@ -19,6 +19,7 @@ import {
 } from "@plank/ui/components/sidebar";
 import {
   AudioLinesIcon,
+  BookIcon,
   GalleryVerticalEndIcon,
   HomeIcon,
   KeyRoundIcon,
@@ -38,6 +39,15 @@ import {
   useSubmit,
   type LoaderFunctionArgs,
 } from "react-router";
+import type { Route } from "./+types/dashboard-page-layout";
+
+export const meta: Route.MetaFunction = () => [
+  { title: "Dashboard | Plank" },
+  {
+    name: "description",
+    content: "Plank admin dashboard.",
+  },
+];
 
 const SESSION_COOKIE_NAME = "session";
 
@@ -68,6 +78,12 @@ const groups = [
         url: "/dashboard",
         icon: <HomeIcon />,
       },
+      {
+        title: "API Docs",
+        url: "http://localhost:4000/reference",
+        icon: <BookIcon />,
+        external: true, // optional if url is already http(s)
+      },
     ],
   },
   {
@@ -90,11 +106,11 @@ const groups = [
             url: "/dashboard/roles",
             icon: <ShieldIcon />,
           },
-          {
-            title: "Manage Permissions",
-            url: "/dashboard/permissions",
-            icon: <KeyRoundIcon />,
-          },
+          // {
+          //   title: "Manage Permissions",
+          //   url: "/dashboard/permissions",
+          //   icon: <KeyRoundIcon />,
+          // },
           {
             title: "Manage Sessions",
             url: "/dashboard/users/sessions",

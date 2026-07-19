@@ -8,6 +8,9 @@ export type GetPingData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * Optional name echoed in the pong message
+         */
         name?: string;
     };
     url: '/ping';
@@ -34,15 +37,36 @@ export type GetUsersData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * Case-insensitive match against name or email
+         */
         search?: string;
+        /**
+         * Only users that have all of these permissions
+         */
         permissions?: Array<'write:all' | 'read:all'>;
+        /**
+         * Include users created on or after this date (UTC)
+         */
         createdAtGte?: string;
+        /**
+         * Include users created on or before this date (UTC)
+         */
         createdAtLte?: string;
+        /**
+         * Sort columns in priority order (id + desc)
+         */
         sorting?: Array<{
             id: string;
             desc: boolean;
         }>;
+        /**
+         * Page size
+         */
         limit?: number;
+        /**
+         * Number of rows to skip
+         */
         offset?: number;
     };
     url: '/users';
@@ -74,9 +98,18 @@ export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
 
 export type PostUsersData = {
     body: {
+        /**
+         * Display name
+         */
         name: string;
         email: string;
+        /**
+         * Plaintext password (hashed before storage)
+         */
         password: string;
+        /**
+         * Existing role id from GET /roles
+         */
         roleId: string;
     };
     path?: never;
@@ -128,16 +161,40 @@ export type GetSessionsData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * Case-insensitive match against user name or email
+         */
         search?: string;
+        /**
+         * Include sessions created on or after this date (UTC)
+         */
         createdAtGte?: string;
+        /**
+         * Include sessions created on or before this date (UTC)
+         */
         createdAtLte?: string;
+        /**
+         * Include sessions expiring on or after this date (UTC)
+         */
         expiresAtGte?: string;
+        /**
+         * Include sessions expiring on or before this date (UTC)
+         */
         expiresAtLte?: string;
+        /**
+         * Sort columns in priority order (id + desc)
+         */
         sorting?: Array<{
             id: string;
             desc: boolean;
         }>;
+        /**
+         * Page size
+         */
         limit?: number;
+        /**
+         * Number of rows to skip
+         */
         offset?: number;
     };
     url: '/sessions';
@@ -171,7 +228,19 @@ export type GetSessionsResponse = GetSessionsResponses[keyof GetSessionsResponse
 export type GetRolesData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        search?: string;
+        permissions?: Array<'write:all' | 'read:all'>;
+        isSystem?: boolean;
+        createdAtGte?: string;
+        createdAtLte?: string;
+        sorting?: Array<{
+            id: string;
+            desc: boolean;
+        }>;
+        limit?: number;
+        offset?: number;
+    };
     url: '/roles';
 };
 
@@ -188,7 +257,12 @@ export type GetRolesResponses = {
                 description: string | unknown;
                 isSystem: boolean;
                 permissions: Array<'write:all' | 'read:all'>;
+                createdAt: string;
+                updatedAt: string;
             }>;
+            total: number;
+            limit: number;
+            offset: number;
         };
     };
 };
@@ -238,6 +312,9 @@ export type PostAuthLoginResponse = PostAuthLoginResponses[keyof PostAuthLoginRe
 
 export type PostAuthSignoutData = {
     body: {
+        /**
+         * Raw session cookie value to revoke
+         */
         cookie: string;
     };
     path?: never;
@@ -259,6 +336,9 @@ export type PostAuthSignoutResponse = PostAuthSignoutResponses[keyof PostAuthSig
 
 export type PostAuthVerifyData = {
     body: {
+        /**
+         * Raw session cookie value
+         */
         cookie: string;
     };
     path?: never;

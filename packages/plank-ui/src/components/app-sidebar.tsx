@@ -26,22 +26,30 @@ export type AppSidebarTeam = {
   plan: string
 }
 
+export type AppSidebarNavSubItem = {
+  title: string
+  url: string
+  icon?: React.ReactNode
+  /** Opens in a new tab with an external-link affordance. */
+  external?: boolean
+}
+
 export type AppSidebarNavItem = {
   title: string
   url: string
   icon?: React.ReactNode
   isActive?: boolean
-  items?: {
-    title: string
-    url: string
-    icon?: React.ReactNode
-  }[]
+  /** Opens in a new tab with an external-link affordance. */
+  external?: boolean
+  items?: AppSidebarNavSubItem[]
 }
 
 export type AppSidebarProject = {
   name: string
   url: string
   icon: React.ReactNode
+  /** Opens in a new tab with an external-link affordance. */
+  external?: boolean
 }
 
 export type AppSidebarNavGroup = {

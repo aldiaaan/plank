@@ -18,10 +18,25 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
+/**
+ * Ping
+ *
+ * Lightweight health check. Optionally echoes a name and returns a small sample of users to verify DB connectivity.
+ */
 export const getPing = <ThrowOnError extends boolean = false>(options?: Options<GetPingData, ThrowOnError>): RequestResult<GetPingResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetPingResponses, unknown, ThrowOnError>({ url: '/ping', ...options });
 
+/**
+ * List users
+ *
+ * Returns a paginated list of users. Supports search by name/email, permission filters, registration date range, and multi-column sorting.
+ */
 export const getUsers = <ThrowOnError extends boolean = false>(options?: Options<GetUsersData, ThrowOnError>): RequestResult<GetUsersResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetUsersResponses, unknown, ThrowOnError>({ url: '/users', ...options });
 
+/**
+ * Create user
+ *
+ * Creates a user account with the given role and hashed password. Returns 409 if the email is already taken, 400 if the role does not exist.
+ */
 export const postUsers = <ThrowOnError extends boolean = false>(options: Options<PostUsersData, ThrowOnError>): RequestResult<PostUsersResponses, PostUsersErrors, ThrowOnError> => (options.client ?? client).post<PostUsersResponses, PostUsersErrors, ThrowOnError>({
     url: '/users',
     ...options,
@@ -31,10 +46,25 @@ export const postUsers = <ThrowOnError extends boolean = false>(options: Options
     }
 });
 
+/**
+ * List sessions
+ *
+ * Returns a paginated list of auth sessions joined with user identity. Supports search by user name/email, created/expiry date ranges, and multi-column sorting.
+ */
 export const getSessions = <ThrowOnError extends boolean = false>(options?: Options<GetSessionsData, ThrowOnError>): RequestResult<GetSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetSessionsResponses, unknown, ThrowOnError>({ url: '/sessions', ...options });
 
+/**
+ * List roles
+ *
+ * Paginated, filterable list of roles. Used by the manage-roles table and when assigning a role to a user.
+ */
 export const getRoles = <ThrowOnError extends boolean = false>(options?: Options<GetRolesData, ThrowOnError>): RequestResult<GetRolesResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetRolesResponses, unknown, ThrowOnError>({ url: '/roles', ...options });
 
+/**
+ * Log in
+ *
+ * Authenticates with email and password, creates a session, and sets the httpOnly session cookie. Returns 401 when credentials are invalid.
+ */
 export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Options<PostAuthLoginData, ThrowOnError>): RequestResult<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError> => (options.client ?? client).post<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError>({
     url: '/auth/login',
     ...options,
@@ -44,6 +74,11 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Opt
     }
 });
 
+/**
+ * Sign out
+ *
+ * Revokes the given session (if still valid) and clears the session cookie. Always succeeds so the client can clear local auth state.
+ */
 export const postAuthSignout = <ThrowOnError extends boolean = false>(options: Options<PostAuthSignoutData, ThrowOnError>): RequestResult<PostAuthSignoutResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostAuthSignoutResponses, unknown, ThrowOnError>({
     url: '/auth/signout',
     ...options,
@@ -53,6 +88,11 @@ export const postAuthSignout = <ThrowOnError extends boolean = false>(options: O
     }
 });
 
+/**
+ * Verify session
+ *
+ * Validates a session cookie token and returns the authenticated user with permissions. Returns 401 when the session is missing, expired, or revoked.
+ */
 export const postAuthVerify = <ThrowOnError extends boolean = false>(options: Options<PostAuthVerifyData, ThrowOnError>): RequestResult<PostAuthVerifyResponses, PostAuthVerifyErrors, ThrowOnError> => (options.client ?? client).post<PostAuthVerifyResponses, PostAuthVerifyErrors, ThrowOnError>({
     url: '/auth/verify',
     ...options,
