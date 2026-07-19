@@ -11,3 +11,15 @@ export class RoleNotFoundError extends ClientError {
   code = "ERR-USER-0002";
   statusCode = 400;
 }
+
+export class UserNotFoundError extends ClientError {
+  message = "The user was not found.";
+  code = "ERR-USER-0003";
+  statusCode = 404;
+}
+
+export class CannotDeleteSelfError extends ClientError {
+  message = "You cannot delete your own account.";
+  code = "ERR-USER-0004";
+  statusCode = 400;
+}

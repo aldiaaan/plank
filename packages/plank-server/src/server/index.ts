@@ -71,6 +71,7 @@ export class PlankServer {
     await this.app.register(cors, {
       origin: this.options.allowedOrigin ?? false,
       credentials: true,
+      methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
     });
 
     this.app.decorateRequest(

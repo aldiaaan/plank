@@ -33,6 +33,55 @@ export type GetPingResponses = {
 
 export type GetPingResponse = GetPingResponses[keyof GetPingResponses];
 
+export type DeleteUsersByIdData = {
+    body?: never;
+    path: {
+        /**
+         * User id to delete
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/users/{id}';
+};
+
+export type DeleteUsersByIdErrors = {
+    /**
+     * Default Response
+     */
+    400: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+    /**
+     * Default Response
+     */
+    404: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+};
+
+export type DeleteUsersByIdError = DeleteUsersByIdErrors[keyof DeleteUsersByIdErrors];
+
+export type DeleteUsersByIdResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            id: string;
+            email: string;
+            name: string;
+        };
+    };
+};
+
+export type DeleteUsersByIdResponse = DeleteUsersByIdResponses[keyof DeleteUsersByIdResponses];
+
 export type GetUsersData = {
     body?: never;
     path?: never;

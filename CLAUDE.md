@@ -365,6 +365,88 @@ On the related manage / table page, put the create entry point in the page heade
 </div>
 ```
 
+### Compound overlays — `Trigger asChild` + `children` (required)
+
+**This pattern is required — not optional.** It applies to **every** overlay that exposes a trigger with `asChild`: `DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`, `TooltipTrigger`, `SheetTrigger`, `Combobox` chips/triggers, and any future Radix-style trigger. Use it everywhere the trigger appears — DataTable cells, page headers, nav items, settings panels, menus, etc.
+
+Encapsulate the overlay (and any mutation it owns) in a dedicated component. Callers pass the action context as props and **`children` as the trigger**. The component always wraps `children` with its `*Trigger asChild`.
+
+**Minimal shape (Dialog):**
+
+```tsx
+function DeleteUserDialog({
+  userId,
+  children,
+}: {
+  userId: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>…</DialogContent>
+    </Dialog>
+  );
+}
+
+// usage — caller owns the trigger UI
+<DeleteUserDialog userId={user.id}>
+  <Button type="button" variant="ghost" size="icon-sm">
+    Delete
+  </Button>
+</DeleteUserDialog>
+```
+
+**Same minimal shape for other overlays:**
+
+```tsx
+function RowActionsMenu({ children }: { children: React.ReactNode }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent>…</DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function FilterPopover({ children }: { children: React.ReactNode }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverContent>…</PopoverContent>
+    </Popover>
+  );
+}
+
+// usage
+<RowActionsMenu>
+  <Button type="button" variant="ghost" size="icon-sm">
+    <MoreHorizontalIcon />
+  </Button>
+</RowActionsMenu>
+
+<FilterPopover>
+  <Button type="button" variant="outline" size="sm">
+    Filter
+  </Button>
+</FilterPopover>
+```
+
+**Do not:**
+
+- Hard-code the trigger button inside the overlay component (callers must own the trigger UI)
+- Lift overlay open state to the page and wire a bare `<Dialog>` / `<Popover>` / `<DropdownMenu>` beside the call site
+- Put mutation / toast / invalidation in `common/tables/*` or scatter it across the page
+
+**Do:**
+
+- Always wrap `children` with the matching `*Trigger asChild` (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`, …)
+- Pass a **single** element as `children` (must accept ref + props for Radix `asChild`)
+- Keep overlay state, side effects, and mutations inside the dedicated component
+- Reuse this shape for every similar overlay (`DeleteRoleDialog`, filter popovers, row action menus, …)
+
+Reference: `features/dashboard/components/delete-user-dialog.tsx`
+
 ### Remote data
 
 - Use **TanStack React Query** (`useQuery` / `useMutation`) for all remote data.
@@ -601,7 +683,7 @@ Pattern (when adding write endpoints):
 3. Use `useMutation({ ...postXMutation() })` (or patch/delete equivalents) — no custom fetch hooks.
 4. Build the form with **react-hook-form**; wire `handleSubmit` to the mutation.
 5. On success: invalidate the list with a partial key match, toast, then navigate back — e.g. `queryClient.invalidateQueries({ queryKey: [{ _id: "getUsers" }] })` (see `create-user-page.tsx` / `create-role-page.tsx`).
-6. Keep dialogs/forms outside `DataTable`; pass row actions via column `cell` (e.g. edit/delete buttons).
+6. **`*Trigger asChild` + `children` is mandatory for every overlay** — Dialog, Popover, DropdownMenu, Tooltip, Sheet, etc. — not only destructive dialogs and not only DataTable cells. Always wrap callers’ trigger UI with the matching `*Trigger asChild` inside a dedicated component (see **Compound overlays — `Trigger asChild` + `children`** and `delete-user-dialog.tsx`). Never hard-code the trigger or lift bare overlay state onto the page.
 
 Do not put mutation logic inside `common/tables/*` — only columns and filterables live there.
 

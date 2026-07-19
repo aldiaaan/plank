@@ -220,7 +220,7 @@ function useDashboardBreadcrumbs(navGroups: AppSidebarGroup[]) {
 }
 
 export default function DashboardPage() {
-  const { email, name } = useLoaderData<typeof loader>();
+  const user = useLoaderData<typeof loader>();
   const breadcrumbs = useDashboardBreadcrumbs(groups);
   const submit = useSubmit();
   const queryClient = useQueryClient();
@@ -229,8 +229,8 @@ export default function DashboardPage() {
     <SidebarProvider className="h-svh overflow-hidden">
       <AppSidebar
         user={{
-          name,
-          email,
+          name: user.name,
+          email: user.email,
         }}
         teams={teams}
         groups={groups}
@@ -276,7 +276,7 @@ export default function DashboardPage() {
           </div>
         </header>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 pt-0">
-          <Outlet />
+          <Outlet context={{ user }} />
         </div>
       </SidebarInset>
     </SidebarProvider>

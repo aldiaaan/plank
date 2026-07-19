@@ -251,7 +251,7 @@ export function DataTableContent(props: DataTableContentProps) {
                 style={{
                   width: column.getSize() || "100%",
                 }}
-                className="h-4 w-full bg-gray-300/50"
+                className="h-4 w-full bg-accent"
               />
             </TableCell>
           ))}

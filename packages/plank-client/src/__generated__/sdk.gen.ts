@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostRolesData, PostRolesErrors, PostRolesResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
+import type { DeleteUsersByIdData, DeleteUsersByIdErrors, DeleteUsersByIdResponses, GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostRolesData, PostRolesErrors, PostRolesResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -24,6 +24,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * Lightweight health check. Optionally echoes a name and returns a small sample of users to verify DB connectivity.
  */
 export const getPing = <ThrowOnError extends boolean = false>(options?: Options<GetPingData, ThrowOnError>): RequestResult<GetPingResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetPingResponses, unknown, ThrowOnError>({ url: '/ping', ...options });
+
+/**
+ * Delete user
+ *
+ * Deletes a user by id. Cascades to sessions, accounts, and role assignments. Returns 400 if you attempt to delete yourself, 404 if the user does not exist.
+ */
+export const deleteUsersById = <ThrowOnError extends boolean = false>(options: Options<DeleteUsersByIdData, ThrowOnError>): RequestResult<DeleteUsersByIdResponses, DeleteUsersByIdErrors, ThrowOnError> => (options.client ?? client).delete<DeleteUsersByIdResponses, DeleteUsersByIdErrors, ThrowOnError>({ url: '/users/{id}', ...options });
 
 /**
  * List users

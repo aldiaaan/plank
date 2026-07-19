@@ -1,4 +1,5 @@
 import { getUsersOptions } from "@plank/client";
+import { Button } from "@plank/ui/components/button";
 import {
   DataTable,
   type DataTableFilterValue,
@@ -14,14 +15,16 @@ import {
   useSortingSearchParams,
 } from "@plank/ui/hooks";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontalIcon } from "lucide-react";
+import { Link, useOutletContext } from "react-router";
 import {
+  type UserManagementRow,
   userManagementColumns,
   userManagementFilterables,
 } from "../../../common/tables/users-management";
-import { Button } from "@plank/ui/components/button";
-import { Link } from "react-router";
+import { UserRowActions } from "./user-row-actions";
 import type { Route } from "./+types/manage-users-page";
-
 export const meta: Route.MetaFunction = () => [
   { title: "Manage Users | Plank" },
   {
@@ -29,6 +32,14 @@ export const meta: Route.MetaFunction = () => [
     content: "Search and filter users by permissions and registration date.",
   },
 ];
+
+type DashboardOutletContext = {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  };
+};
 
 function filtersToQuery(filters: DataTableFilterValue[]) {
   const search = filters.find((filter) => filter.id === "search")?.value?.eq;
@@ -51,7 +62,37 @@ function filtersToQuery(filters: DataTableFilterValue[]) {
   };
 }
 
+function createColumns(
+  currentUserId: string,
+): ColumnDef<UserManagementRow>[] {
+  return [
+    ...userManagementColumns,
+    {
+      id: "actions",
+      size: 72,
+      header: () => <span className="sr-only">Actions</span>,
+      cell: ({ row }) => (
+        <UserRowActions
+          userId={row.original.id}
+          userName={row.original.name}
+          canDelete={row.original.id !== currentUserId}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Actions for ${row.original.name}`}
+          >
+            <MoreHorizontalIcon />
+          </Button>
+        </UserRowActions>
+      ),
+    },
+  ];
+}
+
 export default function ManageUsersPage() {
+  const { user } = useOutletContext<DashboardOutletContext>();
   const [sorting, setSorting] = useSortingSearchParams();
   const [filters, setFilters] = useFilterSearchParams();
   const [{ pageIndex: page, pageSize: perPage }, setPagination] =
@@ -59,6 +100,7 @@ export default function ManageUsersPage() {
 
   const queryFilters = filtersToQuery(filters);
   const offset = (page - 1) * perPage;
+  const columns = createColumns(user.id);
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     ...getUsersOptions({
@@ -100,7 +142,7 @@ export default function ManageUsersPage() {
 
           <DataTable.Root
             data={items}
-            columns={userManagementColumns}
+            columns={columns}
             sorting={sorting}
             onSortingChange={setSorting}
           >

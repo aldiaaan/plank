@@ -50,6 +50,9 @@ function isUniqueViolation(error: unknown): boolean {
 }
 
 export const GET = route({
+  config: {
+    allow: ["admin:read:users", "read:all"],
+  },
   schema: {
     tags: ["Users"],
     summary: "List users",
@@ -149,6 +152,9 @@ export const GET = route({
 });
 
 export const POST = route({
+  config: {
+    allow: ["admin:create:users", "write:all"],
+  },
   schema: {
     tags: ["Users"],
     summary: "Create user",

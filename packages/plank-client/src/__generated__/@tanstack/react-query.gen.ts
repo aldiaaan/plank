@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { getPing, getRoles, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify, postRoles, postUsers } from '../sdk.gen';
-import type { GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostRolesData, PostRolesError, PostRolesResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
+import { deleteUsersById, getPing, getRoles, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify, postRoles, postUsers } from '../sdk.gen';
+import type { DeleteUsersByIdData, DeleteUsersByIdError, DeleteUsersByIdResponse, GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostRolesData, PostRolesError, PostRolesResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -58,6 +58,25 @@ export const getPingOptions = (options?: Options<GetPingData>) => queryOptions<G
     },
     queryKey: getPingQueryKey(options)
 });
+
+/**
+ * Delete user
+ *
+ * Deletes a user by id. Cascades to sessions, accounts, and role assignments. Returns 400 if you attempt to delete yourself, 404 if the user does not exist.
+ */
+export const deleteUsersByIdMutation = (options?: Partial<Options<DeleteUsersByIdData>>): UseMutationOptions<DeleteUsersByIdResponse, DeleteUsersByIdError, Options<DeleteUsersByIdData>> => {
+    const mutationOptions: UseMutationOptions<DeleteUsersByIdResponse, DeleteUsersByIdError, Options<DeleteUsersByIdData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteUsersById({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getUsersQueryKey = (options?: Options<GetUsersData>) => createQueryKey('getUsers', options);
 

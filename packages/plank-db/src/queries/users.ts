@@ -185,3 +185,19 @@ export async function listUsers(
     offset,
   };
 }
+
+export async function deleteUserById(
+  db: DatabaseOrTransaction,
+  userId: string,
+): Promise<{ id: string; email: string; name: string } | null> {
+  const [deleted] = await db
+    .delete(users)
+    .where(eq(users.id, userId))
+    .returning({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+    });
+
+  return deleted ?? null;
+}
