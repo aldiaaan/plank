@@ -13,5 +13,9 @@ dev: infra
 codegen:
     pnpm exec turbo run codegen --filter=@plank/client
 
+# Visualize the Turborepo task graph (https://turborepo.dev/docs/core-concepts/package-and-task-graph)
+deps:
+    pnpm exec turbo run build --graph
+
 db +args:
     pnpm --filter @plank/db exec drizzle-kit {{args}}
