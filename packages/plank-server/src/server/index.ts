@@ -10,7 +10,6 @@ import type { ModuleRegistrationContext, PlankServerOptions } from "@/server/typ
 
 export class PlankServer {
   private readonly container = awilix.createContainer();
-  private modulesRegistered = false;
   private readonly app = fastify({
     // Nested query objects (e.g. sorting[0][id]=…) need qs; Node's parser keeps flat keys.
     querystringParser: (str) => qs.parse(str),
@@ -67,8 +66,6 @@ export class PlankServer {
    * codegen (`openApiDocument()`), which must not fight over a fixed port.
    */
   private async registerModules() {
-    if (this.modulesRegistered) return;
-
     await this.initializeErrorHandlers();
 
     await this.app.register(cors, {
@@ -109,8 +106,6 @@ export class PlankServer {
       this.app.log.info(`Registering module ${module.name}`);
       await module.register(context);
     }
-
-    this.modulesRegistered = true;
   }
 
   async start() {
