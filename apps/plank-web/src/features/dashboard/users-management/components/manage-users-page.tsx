@@ -1,8 +1,8 @@
 import { getUsersOptions } from "@plank/client";
 import {
+  type AuthenticatedUser,
   hasPermission,
   isPermission,
-  type AuthenticatedUser,
   type Permission,
 } from "@plank/common";
 import { Button } from "@plank/ui/components/button";
@@ -24,13 +24,14 @@ import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontalIcon } from "lucide-react";
 import { Link, useOutletContext } from "react-router";
+
 import {
-  type UserManagementRow,
   userManagementColumns,
   userManagementFilterables,
+  type UserManagementRow,
 } from "../../../../common/tables/users-management";
-import { UserRowActions } from "./user-row-actions";
 import type { Route } from "./+types/manage-users-page";
+import { UserRowActions } from "./user-row-actions";
 export const meta: Route.MetaFunction = () => [
   { title: "Manage Users | Plank" },
   {

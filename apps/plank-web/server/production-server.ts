@@ -1,9 +1,11 @@
-import { BaseServer, type ServerOptions } from "./base-server";
-import { createRequestHandler } from "@react-router/express";
-import express, { type Express } from "express";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+
+import { createRequestHandler } from "@react-router/express";
+import express, { type Express } from "express";
 import { pinoHttp } from "pino-http";
+
+import { BaseServer, type ServerOptions } from "./base-server";
 
 export class ProductionServer extends BaseServer {
   _express: Express;

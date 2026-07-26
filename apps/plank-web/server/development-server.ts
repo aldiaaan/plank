@@ -1,11 +1,13 @@
-import { BaseServer, type ServerOptions } from "./base-server";
+import crypto from "node:crypto";
 import { createServer, Server as HttpServer } from "node:http";
-import express, { type Express } from "express";
 import path from "node:path";
+
+import express, { type Express } from "express";
+import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import pretty from "pino-pretty";
-import crypto from "node:crypto";
-import helmet from "helmet";
+
+import { BaseServer, type ServerOptions } from "./base-server";
 
 export class DevelopmentServer extends BaseServer {
   _express: Express;

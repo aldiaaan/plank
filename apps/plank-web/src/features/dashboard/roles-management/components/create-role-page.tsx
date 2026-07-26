@@ -1,5 +1,5 @@
 import { postRolesMutation } from "@plank/client";
-import { PERMISSIONS, type Permission } from "@plank/common";
+import { type Permission,PERMISSIONS } from "@plank/common";
 import { Button } from "@plank/ui/components/button";
 import {
   Combobox,
@@ -20,11 +20,12 @@ import {
   FieldLabel,
 } from "@plank/ui/components/field";
 import { Input } from "@plank/ui/components/input";
-import { Textarea } from "@plank/ui/components/textarea";
 import { toast } from "@plank/ui/components/sonner";
+import { Textarea } from "@plank/ui/components/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
+
 import type { Route } from "./+types/create-role-page";
 
 export const meta: Route.MetaFunction = () => [

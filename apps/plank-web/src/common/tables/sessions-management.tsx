@@ -1,4 +1,4 @@
-import { getUsers, type GetSessionsResponse } from "@plank/client";
+import { type GetSessionsResponse,getUsers } from "@plank/client";
 import {
   Avatar,
   AvatarFallback,

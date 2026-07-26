@@ -1,3 +1,10 @@
+import "@plank/ui/styles.css";
+
+import { Progress } from "@plank/ui/components/progress";
+import { Toaster } from "@plank/ui/components/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
+import { useState } from "react";
 import {
   isRouteErrorResponse,
   Links,
@@ -8,12 +15,7 @@ import {
   ScrollRestoration,
   useNavigation,
 } from "react-router";
-import "@plank/ui/styles.css";
-import { Progress } from "@plank/ui/components/progress";
-import { Toaster } from "@plank/ui/components/sonner";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
+
 import type { Route } from "./+types/root";
 
 export const meta: Route.MetaFunction = () => [
@@ -24,7 +26,7 @@ export const meta: Route.MetaFunction = () => [
   },
 ];
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader(_args: LoaderFunctionArgs) {
   return {};
 }
 

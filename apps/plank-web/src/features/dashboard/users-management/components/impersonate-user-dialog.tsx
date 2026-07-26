@@ -12,7 +12,7 @@ import {
 } from "@plank/ui/components/dialog";
 import { toast } from "@plank/ui/components/sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { type ReactNode,useState } from "react";
 import { useRevalidator } from "react-router";
 
 export type ImpersonateUserDialogProps = {

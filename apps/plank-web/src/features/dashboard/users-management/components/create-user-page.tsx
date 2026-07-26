@@ -14,10 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@plank/ui/components/select";
+import { toast } from "@plank/ui/components/sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { toast } from "@plank/ui/components/sonner";
+
 import type { Route } from "./+types/create-user-page";
 
 export const meta: Route.MetaFunction = () => [

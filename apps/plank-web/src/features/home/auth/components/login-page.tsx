@@ -1,12 +1,13 @@
-import { Pyramid } from "lucide-react";
+import { postAuthLoginMutation } from "@plank/client";
 import {
   LoginForm,
   type LoginFormValues,
 } from "@plank/ui/components/login-form";
-import type { Route } from "./+types/login-page";
 import { useMutation } from "@tanstack/react-query";
-import { postAuthLoginMutation } from "@plank/client";
+import { Pyramid } from "lucide-react";
 import { useNavigate } from "react-router";
+
+import type { Route } from "./+types/login-page";
 
 export const meta: Route.MetaFunction = () => [
   { title: "Login | Plank" },
@@ -24,13 +25,13 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   async function handleLogin(values: LoginFormValues) {
-    const data = await login({
+    await login({
       body: {
         email: values.email,
         password: values.password,
       },
       credentials: "include",
-    }).then((data) => {
+    }).then(() => {
       navigate("/dashboard");
     });
   }

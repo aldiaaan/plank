@@ -21,6 +21,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@plank/ui/components/sidebar";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   BookIcon,
   HomeIcon,
@@ -30,17 +31,17 @@ import {
   Users2,
   UsersIcon,
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Fragment, useMemo } from "react";
 import {
   Link,
+  type LoaderFunctionArgs,
   Outlet,
   redirect,
   useLoaderData,
   useLocation,
   useSubmit,
-  type LoaderFunctionArgs,
 } from "react-router";
+
 import type { Route } from "./+types/dashboard-page-layout";
 import { ImpersonationBanner } from "./impersonation-banner";
 

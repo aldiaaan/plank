@@ -6,6 +6,7 @@ import {
 } from "@plank/ui/components/dropdown-menu";
 import { TrashIcon, VenetianMaskIcon } from "lucide-react";
 import type { ReactNode } from "react";
+
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { ImpersonateUserDialog } from "./impersonate-user-dialog";
 
