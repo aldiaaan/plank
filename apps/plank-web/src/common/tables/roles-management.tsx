@@ -1,4 +1,5 @@
 import type { GetRolesResponse } from "@plank/client";
+import { PERMISSIONS } from "@plank/common";
 import { Badge } from "@plank/ui/components/badge";
 import type {
   DataTableDateRangeFilterable,
@@ -39,10 +40,10 @@ export const roleManagementFilterables: Array<
     label: "Permissions",
     type: "multi-select",
     icon: KeyRoundIcon,
-    options: [
-      { id: "read:all", label: "read:all" },
-      { id: "write:all", label: "write:all" },
-    ],
+    options: PERMISSIONS.map((permission) => ({
+      id: permission,
+      label: permission,
+    })),
   },
   {
     id: "isSystem",

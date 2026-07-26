@@ -1,4 +1,5 @@
 import { getRolesOptions } from "@plank/client";
+import { isPermission, type Permission } from "@plank/common";
 import { Button } from "@plank/ui/components/button";
 import {
   DataTable,
@@ -19,7 +20,7 @@ import { Link } from "react-router";
 import {
   roleManagementColumns,
   roleManagementFilterables,
-} from "../../../common/tables/roles-management";
+} from "../../../../common/tables/roles-management";
 import type { Route } from "./+types/manage-roles-page";
 
 export const meta: Route.MetaFunction = () => [
@@ -35,8 +36,8 @@ function filtersToQuery(filters: DataTableFilterValue[]) {
   const permissions = filters
     .find((filter) => filter.id === "permissions")
     ?.value?.in?.filter(
-      (value): value is "read:all" | "write:all" =>
-        value === "read:all" || value === "write:all",
+      (value): value is Permission =>
+        typeof value === "string" && isPermission(value),
     );
   const isSystem = filters.find((filter) => filter.id === "isSystem")?.value
     ?.eq;

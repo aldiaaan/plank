@@ -12,7 +12,8 @@ import type {
   RouteOptions as FastifyRouteOptions,
 } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import type { Database, Permission } from "@plank/db";
+import type { Database } from "@plank/db";
+import type { Permission } from "@plank/common";
 import type Redis from "ioredis";
 import type { ServerModule } from "./module";
 import type { EventBus } from "../modules/event-bus/event-bus.module";
@@ -23,6 +24,11 @@ export type RequestUser = {
   email: string;
   name: string;
   permissions: Permission[];
+  impersonator: {
+    id: string;
+    email: string;
+    name: string;
+  } | null;
 };
 
 export type RequestLocals = {

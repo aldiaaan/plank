@@ -1,4 +1,9 @@
 import { getUsersOptions } from "@plank/client";
+import {
+  hasPermission,
+  isPermission,
+  type Permission,
+} from "@plank/common";
 import { Button } from "@plank/ui/components/button";
 import {
   DataTable,
@@ -22,7 +27,7 @@ import {
   type UserManagementRow,
   userManagementColumns,
   userManagementFilterables,
-} from "../../../common/tables/users-management";
+} from "../../../../common/tables/users-management";
 import { UserRowActions } from "./user-row-actions";
 import type { Route } from "./+types/manage-users-page";
 export const meta: Route.MetaFunction = () => [
@@ -38,6 +43,8 @@ type DashboardOutletContext = {
     id: string;
     email: string;
     name: string;
+    permissions: Permission[];
+    impersonator: { id: string; email: string; name: string } | null;
   };
 };
 
@@ -46,8 +53,8 @@ function filtersToQuery(filters: DataTableFilterValue[]) {
   const permissions = filters
     .find((filter) => filter.id === "permissions")
     ?.value?.in?.filter(
-      (value): value is "read:all" | "write:all" =>
-        value === "read:all" || value === "write:all",
+      (value): value is Permission =>
+        typeof value === "string" && isPermission(value),
     );
   const createdAt = filters.find((filter) => filter.id === "createdAt")?.value;
 
@@ -62,31 +69,43 @@ function filtersToQuery(filters: DataTableFilterValue[]) {
   };
 }
 
-function createColumns(
-  currentUserId: string,
-): ColumnDef<UserManagementRow>[] {
+function createColumns({
+  currentUserId,
+  canImpersonateUsers,
+  isImpersonating,
+}: {
+  currentUserId: string;
+  canImpersonateUsers: boolean;
+  isImpersonating: boolean;
+}): ColumnDef<UserManagementRow>[] {
   return [
     ...userManagementColumns,
     {
       id: "actions",
       size: 72,
       header: () => <span className="sr-only">Actions</span>,
-      cell: ({ row }) => (
-        <UserRowActions
-          userId={row.original.id}
-          userName={row.original.name}
-          canDelete={row.original.id !== currentUserId}
-        >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={`Actions for ${row.original.name}`}
+      cell: ({ row }) => {
+        const isSelf = row.original.id === currentUserId;
+        return (
+          <UserRowActions
+            userId={row.original.id}
+            userName={row.original.name}
+            canDelete={!isSelf}
+            canImpersonate={
+              canImpersonateUsers && !isSelf && !isImpersonating
+            }
           >
-            <MoreHorizontalIcon />
-          </Button>
-        </UserRowActions>
-      ),
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Actions for ${row.original.name}`}
+            >
+              <MoreHorizontalIcon />
+            </Button>
+          </UserRowActions>
+        );
+      },
     },
   ];
 }
@@ -100,7 +119,15 @@ export default function ManageUsersPage() {
 
   const queryFilters = filtersToQuery(filters);
   const offset = (page - 1) * perPage;
-  const columns = createColumns(user.id);
+  const canImpersonateUsers = hasPermission(
+    user.permissions,
+    "admin:impersonate",
+  );
+  const columns = createColumns({
+    currentUserId: user.id,
+    canImpersonateUsers,
+    isImpersonating: user.impersonator != null,
+  });
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     ...getUsersOptions({

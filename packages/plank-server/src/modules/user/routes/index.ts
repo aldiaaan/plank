@@ -1,28 +1,12 @@
 import { createUserAccount, listUsers } from "@plank/db/queries/users";
-import type { Permission } from "@plank/db";
+import type { Permission } from "@plank/common";
 import { Type } from "typebox";
 import { route } from "../../../server/module";
 import { ErrorResponse } from "../../../server/errors";
 import { SuccessResponse } from "../../../server/responses";
+import { PermissionSchema } from "../../../server/schemas";
 import { hashPassword } from "../../auth/utils";
 import { EmailAlreadyTakenError, RoleNotFoundError } from "../errors";
-
-const PermissionSchema = Type.Union([
-  Type.Literal("write:all"),
-  Type.Literal("read:all"),
-  Type.Literal("admin:create:users"),
-  Type.Literal("admin:read:users"),
-  Type.Literal("admin:update:users"),
-  Type.Literal("admin:delete:users"),
-  Type.Literal("admin:create:roles"),
-  Type.Literal("admin:read:roles"),
-  Type.Literal("admin:update:roles"),
-  Type.Literal("admin:delete:roles"),
-  Type.Literal("admin:create:permissions"),
-  Type.Literal("admin:read:permissions"),
-  Type.Literal("admin:update:permissions"),
-  Type.Literal("admin:delete:permissions"),
-]);
 
 const SortInputSchema = Type.Object({
   id: Type.String(),

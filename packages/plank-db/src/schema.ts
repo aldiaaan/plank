@@ -10,6 +10,9 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import { PERMISSIONS } from "@plank/common";
+
+export type { Permission } from "@plank/common";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -32,6 +35,10 @@ export const sessions = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    impersonatorUserId: uuid("impersonator_user_id").references(
+      () => users.id,
+      { onDelete: "set null" },
+    ),
     secretHash: bytea("secret_hash").notNull(),
     expiresAt: timestamp("expires_at", {
       withTimezone: true,
@@ -77,23 +84,7 @@ export const accounts = pgTable(
   ],
 );
 
-export const permissionEnum = pgEnum("permission", [
-  "write:all",
-  "read:all",
-  "admin:create:users",
-  "admin:read:users",
-  "admin:update:users",
-  "admin:delete:users",
-  "admin:create:roles",
-  "admin:read:roles",
-  "admin:update:roles",
-  "admin:delete:roles",
-  "admin:create:permissions",
-  "admin:read:permissions",
-  "admin:update:permissions",
-  "admin:delete:permissions",
-]);
-export type Permission = (typeof permissionEnum.enumValues)[number];
+export const permissionEnum = pgEnum("permission", [...PERMISSIONS]);
 
 export const roles = pgTable("roles", {
   id: uuid("id").defaultRandom().primaryKey(),

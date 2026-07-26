@@ -1,4 +1,5 @@
 import { postRolesMutation } from "@plank/client";
+import { PERMISSIONS, type Permission } from "@plank/common";
 import { Button } from "@plank/ui/components/button";
 import {
   Combobox,
@@ -34,29 +35,10 @@ export const meta: Route.MetaFunction = () => [
   },
 ];
 
-const PERMISSION_OPTIONS = [
-  "write:all",
-  "read:all",
-  "admin:create:users",
-  "admin:read:users",
-  "admin:update:users",
-  "admin:delete:users",
-  "admin:create:roles",
-  "admin:read:roles",
-  "admin:update:roles",
-  "admin:delete:roles",
-  "admin:create:permissions",
-  "admin:read:permissions",
-  "admin:update:permissions",
-  "admin:delete:permissions",
-] as const;
-
-type PermissionOption = (typeof PERMISSION_OPTIONS)[number];
-
 type CreateRoleFormValues = {
   name: string;
   description: string;
-  permissions: PermissionOption[];
+  permissions: Permission[];
 };
 
 export default function CreateRolePage() {
@@ -159,7 +141,7 @@ export default function CreateRolePage() {
                 <Combobox
                   multiple
                   autoHighlight
-                  items={[...PERMISSION_OPTIONS]}
+                  items={[...PERMISSIONS]}
                   value={field.value}
                   onValueChange={(next) => {
                     field.onChange(next ?? []);

@@ -1,11 +1,13 @@
 import { timingSafeEqual } from "node:crypto";
-import type { Database, Permission, Session, User } from "@plank/db";
+import type { Database, Session, User } from "@plank/db";
+import type { Permission } from "@plank/common";
 import {
   createSession,
   deleteSessionById,
   findPermissionsByUserId,
   findValidSessionById,
 } from "@plank/db/queries/sessions";
+import { findUserById } from "@plank/db/queries/users";
 import { generateSecureRandomString, hashSecret } from "../auth/utils";
 import {
   InvalidSessionTokenError,
@@ -16,6 +18,7 @@ import {
 export type CreateSessionOptions = {
   userId: string;
   expiresAt: Date;
+  impersonatorUserId?: string;
 };
 
 export type CreateSessionResult = {
@@ -26,6 +29,7 @@ export type CreateSessionResult = {
 export type VerifyResult = {
   user: Pick<User, "id" | "email" | "name">;
   permissions: Permission[];
+  impersonator: Pick<User, "id" | "email" | "name"> | null;
 };
 
 export class SessionService {
@@ -43,6 +47,7 @@ export class SessionService {
     const session = await createSession(this.db, {
       id,
       userId: options.userId,
+      impersonatorUserId: options.impersonatorUserId,
       secretHash: Buffer.from(secretHash),
       expiresAt: options.expiresAt,
     });
@@ -75,6 +80,14 @@ export class SessionService {
 
     const permissions = await findPermissionsByUserId(this.db, row.user.id);
 
+    let impersonator: Pick<User, "id" | "email" | "name"> | null = null;
+    if (row.session.impersonatorUserId) {
+      impersonator = await findUserById(
+        this.db,
+        row.session.impersonatorUserId,
+      );
+    }
+
     return {
       user: {
         id: row.user.id,
@@ -82,6 +95,7 @@ export class SessionService {
         name: row.user.name,
       },
       permissions,
+      impersonator,
     };
   }
 
