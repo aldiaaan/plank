@@ -24,6 +24,7 @@
     "@plank/client": "workspace:*",
     "@plank/common": "workspace:*",
     "@plank/server": "workspace:*",
+    "@plank/ui": "workspace:*",
     "@react-router/express": "^8.2.0",
     "@react-router/node": "^8.2.0",
     "@tanstack/react-query": "^5.101.2",
