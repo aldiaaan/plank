@@ -209,7 +209,7 @@ export default function CreateUserPage() {
           <p className="text-sm text-destructive">{error.message}</p>
         ) : null}
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="ml-auto flex items-center gap-2">
           <Button type="button" variant="outline" asChild>
             <Link viewTransition to="/dashboard/users">
               Cancel

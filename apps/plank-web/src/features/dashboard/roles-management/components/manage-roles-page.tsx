@@ -88,7 +88,7 @@ export default function ManageRolesPage() {
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
           <div className="flex shrink-0 items-start justify-between gap-4">
             <div>
-              <h1 className="text-xl font-semibold font-heading tracking-tight">
+              <h1 className="font-heading text-xl font-semibold tracking-tight">
                 Manage Roles
               </h1>
               <p className="text-sm text-muted-foreground">

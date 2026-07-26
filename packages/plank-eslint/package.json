@@ -4,7 +4,10 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "files": ["base.js", "baseReact.js"],
+  "files": [
+    "base.js",
+    "baseReact.js"
+  ],
   "exports": {
     "./base": "./base.js",
     "./base.js": "./base.js",
@@ -20,7 +23,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-simple-import-sort": "^14.0.0",
+    "eslint-plugin-tailwindcss": "^4.2.0",
     "globals": "^17.7.0",
+    "tailwindcss": "^4.3.2",
     "typescript-eslint": "^8.0.0"
   },
   "devDependencies": {

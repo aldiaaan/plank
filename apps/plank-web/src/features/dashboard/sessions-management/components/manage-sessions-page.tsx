@@ -82,7 +82,7 @@ export default function ManageSessionsPage() {
       <ScrollableProvider>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
           <div className="shrink-0">
-            <h1 className="text-xl font-semibold font-heading tracking-tight">
+            <h1 className="font-heading text-xl font-semibold tracking-tight">
               Manage Sessions
             </h1>
             <p className="text-sm text-muted-foreground">

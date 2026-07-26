@@ -1,9 +1,18 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { defineConfig } from "eslint/config";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
+import eslintPluginTailwindcss from "eslint-plugin-tailwindcss";
 import globals from "globals";
 
 import base from "./base.js";
+
+const cssConfigPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../plank-ui/src/styles.css",
+);
 
 const baseReactConfig = defineConfig(
   ...base,
@@ -34,6 +43,15 @@ const baseReactConfig = defineConfig(
   {
     files: ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}"],
     ...reactHooks.configs.flat.recommended,
+  },
+  {
+    files: ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}"],
+    extends: [eslintPluginTailwindcss.configs.recommended],
+    settings: {
+      tailwindcss: {
+        cssConfigPath,
+      },
+    },
   },
 );
 
