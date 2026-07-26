@@ -18,6 +18,13 @@ const baseConfig = defineConfig(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "sort-imports": [
+        "error",
+        {
+          ignoreCase: true,
+          allowSeparatedGroups: true,
+        },
+      ],
     },
   },
 );
