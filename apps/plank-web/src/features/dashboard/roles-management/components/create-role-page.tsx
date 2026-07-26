@@ -153,7 +153,7 @@ export default function CreateRolePage() {
                     aria-invalid={!!errors.permissions || undefined}
                   >
                     <ComboboxValue>
-                      {(values: PermissionOption[]) => (
+                      {(values: Permission[]) => (
                         <>
                           {values.map((item) => (
                             <ComboboxChip key={item}>{item}</ComboboxChip>
