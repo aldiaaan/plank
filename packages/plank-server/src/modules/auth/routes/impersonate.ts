@@ -1,5 +1,5 @@
 import { findUserById } from "@plank/db/queries/users";
-import { hasPermission, type Permission } from "@plank/common";
+import { hasPermission, type AuthIdentity, type Permission } from "@plank/common";
 import { Type } from "typebox";
 import { route } from "../../../server/module";
 import { ErrorResponse } from "../../../server/errors";
@@ -72,12 +72,7 @@ export const POST = route({
       throw new UnauthorizedError();
     }
 
-    let admin: {
-      id: string;
-      email: string;
-      name: string;
-      permissions: Permission[];
-    };
+    let admin: AuthIdentity & { permissions: Permission[] };
     try {
       const result = await sessionService.verify(sessionToken);
       admin = {

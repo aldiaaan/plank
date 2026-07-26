@@ -13,23 +13,13 @@ import type {
 } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { Database } from "@plank/db";
-import type { Permission } from "@plank/common";
+import type { AuthenticatedUser, Permission } from "@plank/common";
 import type Redis from "ioredis";
 import type { ServerModule } from "./module";
 import type { EventBus } from "../modules/event-bus/event-bus.module";
 import { SessionService } from "@/modules/session/session.service";
 
-export type RequestUser = {
-  id: string;
-  email: string;
-  name: string;
-  permissions: Permission[];
-  impersonator: {
-    id: string;
-    email: string;
-    name: string;
-  } | null;
-};
+export type RequestUser = AuthenticatedUser;
 
 export type RequestLocals = {
   user: RequestUser | null;

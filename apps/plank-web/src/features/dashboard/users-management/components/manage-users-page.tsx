@@ -2,6 +2,7 @@ import { getUsersOptions } from "@plank/client";
 import {
   hasPermission,
   isPermission,
+  type AuthenticatedUser,
   type Permission,
 } from "@plank/common";
 import { Button } from "@plank/ui/components/button";
@@ -39,13 +40,7 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 type DashboardOutletContext = {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    permissions: Permission[];
-    impersonator: { id: string; email: string; name: string } | null;
-  };
+  user: AuthenticatedUser;
 };
 
 function filtersToQuery(filters: DataTableFilterValue[]) {

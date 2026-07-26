@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
-import type { Database, Session, User } from "@plank/db";
-import type { Permission } from "@plank/common";
+import type { Database, Session } from "@plank/db";
+import type { AuthIdentity, Permission } from "@plank/common";
 import {
   createSession,
   deleteSessionById,
@@ -27,9 +27,9 @@ export type CreateSessionResult = {
 };
 
 export type VerifyResult = {
-  user: Pick<User, "id" | "email" | "name">;
+  user: AuthIdentity;
   permissions: Permission[];
-  impersonator: Pick<User, "id" | "email" | "name"> | null;
+  impersonator: AuthIdentity | null;
 };
 
 export class SessionService {
@@ -80,12 +80,19 @@ export class SessionService {
 
     const permissions = await findPermissionsByUserId(this.db, row.user.id);
 
-    let impersonator: Pick<User, "id" | "email" | "name"> | null = null;
+    let impersonator: AuthIdentity | null = null;
     if (row.session.impersonatorUserId) {
-      impersonator = await findUserById(
+      const impersonatorUser = await findUserById(
         this.db,
         row.session.impersonatorUserId,
       );
+      if (impersonatorUser) {
+        impersonator = {
+          id: impersonatorUser.id,
+          email: impersonatorUser.email,
+          name: impersonatorUser.name,
+        };
+      }
     }
 
     return {
