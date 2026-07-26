@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm";
 
 import type { DatabaseOrTransaction } from "..";
-import { type Permission,roles } from "../schema";
+import { type Permission, roles } from "../schema";
 import { buildOrderBy, type SortInput } from "./sort";
 
 export type ListRolesOptions = {
