@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   sessionManagementColumns,
   sessionManagementFilterables,
-} from "../../../common/tables/sessions-management";
+} from "../../../../common/tables/sessions-management";
 import type { Route } from "./+types/manage-sessions-page";
 
 export const meta: Route.MetaFunction = () => [

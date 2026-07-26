@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteUsersByIdData, DeleteUsersByIdErrors, DeleteUsersByIdResponses, GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostRolesData, PostRolesErrors, PostRolesResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
+import type { DeleteUsersByIdData, DeleteUsersByIdErrors, DeleteUsersByIdResponses, GetPingData, GetPingResponses, GetRolesData, GetRolesResponses, GetSessionsData, GetSessionsResponses, GetUsersData, GetUsersResponses, PostAuthImpersonateData, PostAuthImpersonateErrors, PostAuthImpersonateResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostAuthSignoutData, PostAuthSignoutResponses, PostAuthStopImpersonateData, PostAuthStopImpersonateErrors, PostAuthStopImpersonateResponses, PostAuthVerifyData, PostAuthVerifyErrors, PostAuthVerifyResponses, PostRolesData, PostRolesErrors, PostRolesResponses, PostUsersData, PostUsersErrors, PostUsersResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -82,6 +82,20 @@ export const postRoles = <ThrowOnError extends boolean = false>(options: Options
 export const getSessions = <ThrowOnError extends boolean = false>(options?: Options<GetSessionsData, ThrowOnError>): RequestResult<GetSessionsResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetSessionsResponses, unknown, ThrowOnError>({ url: '/sessions', ...options });
 
 /**
+ * Start impersonating a user
+ *
+ * Creates an impersonation session for the given user and sets the httpOnly impersonation cookie. The original session cookie is left unchanged. Requires admin:impersonate or write:all on the real session. Returns 400 if you attempt to impersonate yourself or are already impersonating, 404 if the target user does not exist.
+ */
+export const postAuthImpersonate = <ThrowOnError extends boolean = false>(options: Options<PostAuthImpersonateData, ThrowOnError>): RequestResult<PostAuthImpersonateResponses, PostAuthImpersonateErrors, ThrowOnError> => (options.client ?? client).post<PostAuthImpersonateResponses, PostAuthImpersonateErrors, ThrowOnError>({
+    url: '/auth/impersonate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Log in
  *
  * Authenticates with email and password, creates a session, and sets the httpOnly session cookie. Returns 401 when credentials are invalid.
@@ -98,7 +112,7 @@ export const postAuthLogin = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Sign out
  *
- * Revokes the given session (if still valid) and clears the session cookie. Always succeeds so the client can clear local auth state.
+ * Revokes the given session and optional impersonation session (if still valid) and clears both cookies. Always succeeds so the client can clear local auth state.
  */
 export const postAuthSignout = <ThrowOnError extends boolean = false>(options: Options<PostAuthSignoutData, ThrowOnError>): RequestResult<PostAuthSignoutResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostAuthSignoutResponses, unknown, ThrowOnError>({
     url: '/auth/signout',
@@ -110,9 +124,16 @@ export const postAuthSignout = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
+ * Stop impersonating
+ *
+ * Revokes the impersonation session and clears the impersonation cookie. The original session cookie is left intact so the admin is restored. Returns 400 when not currently impersonating.
+ */
+export const postAuthStopImpersonate = <ThrowOnError extends boolean = false>(options?: Options<PostAuthStopImpersonateData, ThrowOnError>): RequestResult<PostAuthStopImpersonateResponses, PostAuthStopImpersonateErrors, ThrowOnError> => (options?.client ?? client).post<PostAuthStopImpersonateResponses, PostAuthStopImpersonateErrors, ThrowOnError>({ url: '/auth/stop-impersonate', ...options });
+
+/**
  * Verify session
  *
- * Validates a session cookie token and returns the authenticated user with permissions. Returns 401 when the session is missing, expired, or revoked.
+ * Validates session cookies and returns the effective authenticated user with permissions. When an impersonation cookie is present and valid, returns the impersonated user and the impersonator. Otherwise validates the session cookie. Returns 401 when no valid session exists.
  */
 export const postAuthVerify = <ThrowOnError extends boolean = false>(options: Options<PostAuthVerifyData, ThrowOnError>): RequestResult<PostAuthVerifyResponses, PostAuthVerifyErrors, ThrowOnError> => (options.client ?? client).post<PostAuthVerifyResponses, PostAuthVerifyErrors, ThrowOnError>({
     url: '/auth/verify',

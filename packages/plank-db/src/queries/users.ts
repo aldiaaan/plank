@@ -187,6 +187,23 @@ export async function listUsers(
   };
 }
 
+export async function findUserById(
+  db: DatabaseOrTransaction,
+  userId: string,
+): Promise<{ id: string; email: string; name: string } | null> {
+  const [user] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return user ?? null;
+}
+
 export async function deleteUserById(
   db: DatabaseOrTransaction,
   userId: string,

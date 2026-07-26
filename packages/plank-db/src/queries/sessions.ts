@@ -140,7 +140,10 @@ export async function listSessions(
 
 export async function createSession(
   db: DatabaseOrTransaction,
-  values: Pick<NewSession, "id" | "userId" | "secretHash" | "expiresAt">,
+  values: Pick<
+    NewSession,
+    "id" | "userId" | "secretHash" | "expiresAt" | "impersonatorUserId"
+  >,
 ) {
   const [session] = await db.insert(sessions).values(values).returning();
   return session;

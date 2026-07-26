@@ -93,7 +93,7 @@ export type GetUsersData = {
         /**
          * Only users that have all of these permissions
          */
-        permissions?: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+        permissions?: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
         /**
          * Include users created on or after this date (UTC)
          */
@@ -132,7 +132,7 @@ export type GetUsersResponses = {
                 id: string;
                 email: string;
                 name: string;
-                permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+                permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
                 createdAt: string;
                 updatedAt: string;
             }>;
@@ -197,7 +197,7 @@ export type PostUsersResponses = {
             id: string;
             email: string;
             name: string;
-            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
             createdAt: string;
             updatedAt: string;
         };
@@ -211,7 +211,7 @@ export type GetRolesData = {
     path?: never;
     query?: {
         search?: string;
-        permissions?: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+        permissions?: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
         isSystem?: boolean;
         createdAtGte?: string;
         createdAtLte?: string;
@@ -237,7 +237,7 @@ export type GetRolesResponses = {
                 name: string;
                 description: string | unknown;
                 isSystem: boolean;
-                permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+                permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
                 createdAt: string;
                 updatedAt: string;
             }>;
@@ -263,7 +263,7 @@ export type PostRolesData = {
         /**
          * At least one permission to grant
          */
-        permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+        permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
     };
     path?: never;
     query?: never;
@@ -294,7 +294,7 @@ export type PostRolesResponses = {
             name: string;
             description: string | unknown;
             isSystem: boolean;
-            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
             createdAt: string;
             updatedAt: string;
         };
@@ -375,6 +375,76 @@ export type GetSessionsResponses = {
 
 export type GetSessionsResponse = GetSessionsResponses[keyof GetSessionsResponses];
 
+export type PostAuthImpersonateData = {
+    body: {
+        /**
+         * User id to impersonate
+         */
+        userId: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/auth/impersonate';
+};
+
+export type PostAuthImpersonateErrors = {
+    /**
+     * Default Response
+     */
+    400: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+    /**
+     * Default Response
+     */
+    401: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+    /**
+     * Default Response
+     */
+    403: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+    /**
+     * Default Response
+     */
+    404: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+};
+
+export type PostAuthImpersonateError = PostAuthImpersonateErrors[keyof PostAuthImpersonateErrors];
+
+export type PostAuthImpersonateResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            id: string;
+            email: string;
+            name: string;
+            impersonator: {
+                id: string;
+                email: string;
+                name: string;
+            };
+        };
+    };
+};
+
+export type PostAuthImpersonateResponse = PostAuthImpersonateResponses[keyof PostAuthImpersonateResponses];
+
 export type PostAuthLoginData = {
     body: {
         email: string;
@@ -422,6 +492,10 @@ export type PostAuthSignoutData = {
          * Raw session cookie value to revoke
          */
         cookie: string;
+        /**
+         * Raw impersonation cookie value to revoke
+         */
+        impersonationCookie?: string;
     };
     path?: never;
     query?: never;
@@ -440,12 +514,60 @@ export type PostAuthSignoutResponses = {
 
 export type PostAuthSignoutResponse = PostAuthSignoutResponses[keyof PostAuthSignoutResponses];
 
+export type PostAuthStopImpersonateData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/stop-impersonate';
+};
+
+export type PostAuthStopImpersonateErrors = {
+    /**
+     * Default Response
+     */
+    400: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+    /**
+     * Default Response
+     */
+    401: {
+        message: string;
+        code: string;
+        statusCode: number;
+    };
+};
+
+export type PostAuthStopImpersonateError = PostAuthStopImpersonateErrors[keyof PostAuthStopImpersonateErrors];
+
+export type PostAuthStopImpersonateResponses = {
+    /**
+     * Default Response
+     */
+    200: {
+        message: string;
+        result: {
+            id: string;
+            email: string;
+            name: string;
+        };
+    };
+};
+
+export type PostAuthStopImpersonateResponse = PostAuthStopImpersonateResponses[keyof PostAuthStopImpersonateResponses];
+
 export type PostAuthVerifyData = {
     body: {
         /**
          * Raw session cookie value
          */
         cookie: string;
+        /**
+         * Raw impersonation cookie value. When present and valid, takes precedence over the session cookie.
+         */
+        impersonationCookie?: string;
     };
     path?: never;
     query?: never;
@@ -475,7 +597,12 @@ export type PostAuthVerifyResponses = {
             id: string;
             email: string;
             name: string;
-            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions'>;
+            permissions: Array<'write:all' | 'read:all' | 'admin:create:users' | 'admin:read:users' | 'admin:update:users' | 'admin:delete:users' | 'admin:create:roles' | 'admin:read:roles' | 'admin:update:roles' | 'admin:delete:roles' | 'admin:create:permissions' | 'admin:read:permissions' | 'admin:update:permissions' | 'admin:delete:permissions' | 'admin:impersonate'>;
+            impersonator: {
+                id: string;
+                email: string;
+                name: string;
+            } | unknown;
         };
     };
 };

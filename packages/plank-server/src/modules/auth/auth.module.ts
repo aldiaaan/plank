@@ -7,7 +7,10 @@ import type {
   ModuleRegistrationContext,
   RequestLocals,
 } from "../../server/types";
-import { SESSION_COOKIE_NAME } from "../session/constants";
+import {
+  IMPERSONATION_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+} from "../session/constants";
 import { ForbiddenError, UnauthorizedError } from "./errors";
 import { hashPassword } from "./utils";
 
@@ -46,17 +49,38 @@ export class AuthModule extends ServerModule {
     context.app.addHook("onRequest", async (request) => {
       request.locals = { user: null };
 
+      const sessionService = request.container.resolve("sessionService");
+
+      const impersonationToken = request.cookies[IMPERSONATION_COOKIE_NAME];
+      if (impersonationToken) {
+        try {
+          const result = await sessionService.verify(impersonationToken);
+          if (result.impersonator) {
+            request.locals.user = {
+              id: result.user.id,
+              email: result.user.email,
+              name: result.user.name,
+              permissions: result.permissions,
+              impersonator: result.impersonator,
+            };
+            return;
+          }
+        } catch {
+          // Invalid impersonation cookie — fall through to session.
+        }
+      }
+
       const token = request.cookies[SESSION_COOKIE_NAME];
       if (!token) return;
 
       try {
-        const sessionService = request.container.resolve("sessionService");
         const result = await sessionService.verify(token);
         request.locals.user = {
           id: result.user.id,
           email: result.user.email,
           name: result.user.name,
           permissions: result.permissions,
+          impersonator: null,
         };
       } catch {
         request.locals.user = null;

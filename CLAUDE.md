@@ -459,7 +459,7 @@ You can also pin a single job type: `queue.dispatch<SendWelcomeEmailJob>({ … }
 
 ### Dashboard form pages
 
-When adding a create/edit form inside the dashboard, match the layout and field styling of `apps/plank-web/src/features/dashboard/components/create-user-page.tsx`:
+When adding a create/edit form inside the dashboard, match the layout and field styling of `apps/plank-web/src/features/dashboard/users-management/components/create-user-page.tsx`:
 
 - Outer shell: `mx-auto flex min-h-0 w-full max-w-xl flex-1 flex-col gap-6`
 - Page header: `font-heading` title + short `text-sm text-muted-foreground` description
@@ -570,7 +570,7 @@ function FilterPopover({ children }: { children: React.ReactNode }) {
 - Keep overlay state, side effects, and mutations inside the dedicated component
 - Reuse this shape for every similar overlay (`DeleteRoleDialog`, filter popovers, row action menus, …)
 
-Reference: `features/dashboard/components/delete-user-dialog.tsx`
+Reference: `features/dashboard/users-management/components/delete-user-dialog.tsx`
 
 ### Remote data
 
@@ -632,9 +632,9 @@ Persist table state in the URL with `@plank/ui/hooks` (`useSortingSearchParams`,
 
 Reference implementations:
 
-- Users: `GET /users` → `listUsers` → `users-management.tsx` → `manage-users-page.tsx` (+ `create-user-page.tsx`)
-- Sessions: `GET /sessions` → `listSessions` → `sessions-management.tsx` → `manage-sessions-page.tsx`
-- Roles: `GET /roles` → `listRoles` → `roles-management.tsx` → `manage-roles-page.tsx` (+ `create-role-page.tsx`)
+- Users: `GET /users` → `listUsers` → `users-management.tsx` → `users-management/components/manage-users-page.tsx` (+ `create-user-page.tsx`)
+- Sessions: `GET /sessions` → `listSessions` → `sessions-management.tsx` → `sessions-management/components/manage-sessions-page.tsx`
+- Roles: `GET /roles` → `listRoles` → `roles-management.tsx` → `roles-management/components/manage-roles-page.tsx` (+ `create-role-page.tsx`)
 
 Paths:
 
@@ -645,7 +645,7 @@ Paths:
 - DB sessions: `packages/plank-db/src/queries/sessions.ts`
 - DB roles: `packages/plank-db/src/queries/roles.ts`
 - Columns/filters: `apps/plank-web/src/common/tables/`
-- Pages: `apps/plank-web/src/features/dashboard/components/`
+- Pages: `apps/plank-web/src/features/dashboard/<domain>/components/` (e.g. `users-management/`, `roles-management/`, `sessions-management/`)
 - URL state: `packages/plank-ui/src/hooks/use-search-params.ts`
 - Query error empty: `packages/plank-ui/src/components/query-error.tsx`
 

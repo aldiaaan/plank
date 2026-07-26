@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { deleteUsersById, getPing, getRoles, getSessions, getUsers, type Options, postAuthLogin, postAuthSignout, postAuthVerify, postRoles, postUsers } from '../sdk.gen';
-import type { DeleteUsersByIdData, DeleteUsersByIdError, DeleteUsersByIdResponse, GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostRolesData, PostRolesError, PostRolesResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
+import { deleteUsersById, getPing, getRoles, getSessions, getUsers, type Options, postAuthImpersonate, postAuthLogin, postAuthSignout, postAuthStopImpersonate, postAuthVerify, postRoles, postUsers } from '../sdk.gen';
+import type { DeleteUsersByIdData, DeleteUsersByIdError, DeleteUsersByIdResponse, GetPingData, GetPingResponse, GetRolesData, GetRolesResponse, GetSessionsData, GetSessionsResponse, GetUsersData, GetUsersResponse, PostAuthImpersonateData, PostAuthImpersonateError, PostAuthImpersonateResponse, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostAuthSignoutData, PostAuthSignoutResponse, PostAuthStopImpersonateData, PostAuthStopImpersonateError, PostAuthStopImpersonateResponse, PostAuthVerifyData, PostAuthVerifyError, PostAuthVerifyResponse, PostRolesData, PostRolesError, PostRolesResponse, PostUsersData, PostUsersError, PostUsersResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -302,6 +302,25 @@ export const getSessionsInfiniteOptions = (options?: Options<GetSessionsData>) =
 };
 
 /**
+ * Start impersonating a user
+ *
+ * Creates an impersonation session for the given user and sets the httpOnly impersonation cookie. The original session cookie is left unchanged. Requires admin:impersonate or write:all on the real session. Returns 400 if you attempt to impersonate yourself or are already impersonating, 404 if the target user does not exist.
+ */
+export const postAuthImpersonateMutation = (options?: Partial<Options<PostAuthImpersonateData>>): UseMutationOptions<PostAuthImpersonateResponse, PostAuthImpersonateError, Options<PostAuthImpersonateData>> => {
+    const mutationOptions: UseMutationOptions<PostAuthImpersonateResponse, PostAuthImpersonateError, Options<PostAuthImpersonateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postAuthImpersonate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
  * Log in
  *
  * Authenticates with email and password, creates a session, and sets the httpOnly session cookie. Returns 401 when credentials are invalid.
@@ -323,7 +342,7 @@ export const postAuthLoginMutation = (options?: Partial<Options<PostAuthLoginDat
 /**
  * Sign out
  *
- * Revokes the given session (if still valid) and clears the session cookie. Always succeeds so the client can clear local auth state.
+ * Revokes the given session and optional impersonation session (if still valid) and clears both cookies. Always succeeds so the client can clear local auth state.
  */
 export const postAuthSignoutMutation = (options?: Partial<Options<PostAuthSignoutData>>): UseMutationOptions<PostAuthSignoutResponse, DefaultError, Options<PostAuthSignoutData>> => {
     const mutationOptions: UseMutationOptions<PostAuthSignoutResponse, DefaultError, Options<PostAuthSignoutData>> = {
@@ -340,9 +359,28 @@ export const postAuthSignoutMutation = (options?: Partial<Options<PostAuthSignou
 };
 
 /**
+ * Stop impersonating
+ *
+ * Revokes the impersonation session and clears the impersonation cookie. The original session cookie is left intact so the admin is restored. Returns 400 when not currently impersonating.
+ */
+export const postAuthStopImpersonateMutation = (options?: Partial<Options<PostAuthStopImpersonateData>>): UseMutationOptions<PostAuthStopImpersonateResponse, PostAuthStopImpersonateError, Options<PostAuthStopImpersonateData>> => {
+    const mutationOptions: UseMutationOptions<PostAuthStopImpersonateResponse, PostAuthStopImpersonateError, Options<PostAuthStopImpersonateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await postAuthStopImpersonate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
  * Verify session
  *
- * Validates a session cookie token and returns the authenticated user with permissions. Returns 401 when the session is missing, expired, or revoked.
+ * Validates session cookies and returns the effective authenticated user with permissions. When an impersonation cookie is present and valid, returns the impersonated user and the impersonator. Otherwise validates the session cookie. Returns 401 when no valid session exists.
  */
 export const postAuthVerifyMutation = (options?: Partial<Options<PostAuthVerifyData>>): UseMutationOptions<PostAuthVerifyResponse, PostAuthVerifyError, Options<PostAuthVerifyData>> => {
     const mutationOptions: UseMutationOptions<PostAuthVerifyResponse, PostAuthVerifyError, Options<PostAuthVerifyData>> = {
