@@ -1,21 +1,17 @@
+import type { SortInput } from "@plank/common";
 import { createParser, parseAsArrayOf } from "nuqs";
-
-export type SortInput = {
-  id: string;
-  desc: boolean;
-};
 
 /** URL state codec only (`?sorting=createdAt:desc`). API receives `SortInput[]` from the client. */
 export const parseAsSort = createParser({
-  parse(queryValue) {
+  parse(queryValue): SortInput | null {
     const [id, direction] = queryValue.split(":");
     if (!id) return null;
     return { id, desc: direction === "desc" };
   },
-  serialize(value) {
+  serialize(value: SortInput) {
     return `${value.id}:${value.desc ? "desc" : "asc"}`;
   },
-  eq(a, b) {
+  eq(a: SortInput, b: SortInput) {
     return a.id === b.id && a.desc === b.desc;
   },
 });

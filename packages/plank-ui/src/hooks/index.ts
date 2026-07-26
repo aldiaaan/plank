@@ -10,3 +10,4 @@ export {
   type ParsedFilterValue,
   type ParsedFilterValueSymbols,
 } from "./use-search-params";
+export { parseAsSorting } from "./sort-parser";

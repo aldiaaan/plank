@@ -14,3 +14,10 @@ export const PermissionSchema: TUnion<
 );
 
 export type PermissionSchema = Static<typeof PermissionSchema>;
+
+export const SortInputSchema = Type.Object({
+  id: Type.String(),
+  desc: Type.Boolean(),
+});
+
+export type SortInputSchema = Static<typeof SortInputSchema>;

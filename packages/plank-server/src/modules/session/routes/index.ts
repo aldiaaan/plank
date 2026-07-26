@@ -2,11 +2,7 @@ import { listSessions } from "@plank/db/queries/sessions";
 import { Type } from "typebox";
 import { route } from "../../../server/module";
 import { SuccessResponse } from "../../../server/responses";
-
-const SortInputSchema = Type.Object({
-  id: Type.String(),
-  desc: Type.Boolean(),
-});
+import { SortInputSchema } from "../../../server/schemas";
 
 const SessionItem = Type.Object({
   id: Type.String(),

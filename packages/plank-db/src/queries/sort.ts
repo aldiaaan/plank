@@ -1,8 +1,7 @@
 import { asc, desc, type AnyColumn, type SQL, type SQLWrapper } from "drizzle-orm";
-import type { SortInput } from "./sort-parser";
+import type { SortInput } from "@plank/common";
 
-export type { SortInput } from "./sort-parser";
-export { parseAsSort, parseAsSorting } from "./sort-parser";
+export type { SortInput } from "@plank/common";
 
 type OrderableColumn = AnyColumn | SQLWrapper;
 

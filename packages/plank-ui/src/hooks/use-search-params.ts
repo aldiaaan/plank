@@ -8,10 +8,7 @@ import { createMultiParser } from "nuqs/server";
 import qs from "qs";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 import { functionalUpdate } from "@tanstack/react-table";
-import {
-  parseAsSort,
-  parseAsSorting,
-} from "@plank/db/queries/sort-parser";
+import { parseAsSort, parseAsSorting } from "./sort-parser";
 
 export { parseAsSort };
 

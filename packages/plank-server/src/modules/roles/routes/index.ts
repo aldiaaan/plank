@@ -4,13 +4,8 @@ import { Type } from "typebox";
 import { route } from "../../../server/module";
 import { ErrorResponse } from "../../../server/errors";
 import { SuccessResponse } from "../../../server/responses";
-import { PermissionSchema } from "../../../server/schemas";
+import { PermissionSchema, SortInputSchema } from "../../../server/schemas";
 import { RoleNameAlreadyTakenError } from "../errors";
-
-const SortInputSchema = Type.Object({
-  id: Type.String(),
-  desc: Type.Boolean(),
-});
 
 const RoleItem = Type.Object({
   id: Type.String({ format: "uuid" }),

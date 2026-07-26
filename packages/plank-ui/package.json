@@ -15,7 +15,6 @@
   },
   "peerDependencies": {
     "@plank/common": "workspace:*",
-    "@plank/db": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.4.0",
     "lucide": "^1.25.0",
