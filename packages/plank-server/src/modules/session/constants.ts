@@ -1,2 +1,5 @@
-export const SESSION_COOKIE_NAME = "session";
-export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+export {
+  SESSION_COOKIE_NAME,
+  IMPERSONATION_COOKIE_NAME,
+  SESSION_TTL_MS,
+} from "@plank/common";

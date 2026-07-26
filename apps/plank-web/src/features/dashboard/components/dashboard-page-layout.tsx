@@ -1,5 +1,9 @@
 import { postAuthSignout, postAuthVerify } from "@plank/client";
 import {
+  IMPERSONATION_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+} from "@plank/common";
+import {
   AppSidebar,
   type AppSidebarGroup,
 } from "@plank/ui/components/app-sidebar";
@@ -18,15 +22,11 @@ import {
   SidebarTrigger,
 } from "@plank/ui/components/sidebar";
 import {
-  AudioLinesIcon,
   BookIcon,
-  GalleryVerticalEndIcon,
   HomeIcon,
-  KeyRoundIcon,
   LogInIcon,
   ShieldIcon,
   StepBackIcon,
-  TerminalIcon,
   Users2,
   UsersIcon,
 } from "lucide-react";
@@ -42,32 +42,13 @@ import {
   type LoaderFunctionArgs,
 } from "react-router";
 import type { Route } from "./+types/dashboard-page-layout";
+import { ImpersonationBanner } from "./impersonation-banner";
 
 export const meta: Route.MetaFunction = () => [
   { title: "Dashboard | Plank" },
   {
     name: "description",
     content: "Plank admin dashboard.",
-  },
-];
-
-const SESSION_COOKIE_NAME = "session";
-
-const teams = [
-  {
-    name: "Acme Inc",
-    logo: <GalleryVerticalEndIcon />,
-    plan: "Enterprise",
-  },
-  {
-    name: "Acme Corp.",
-    logo: <AudioLinesIcon />,
-    plan: "Startup",
-  },
-  {
-    name: "Evil Corp.",
-    logo: <TerminalIcon />,
-    plan: "Free",
   },
 ];
 
@@ -91,7 +72,7 @@ const groups = [
         url: "http://localhost:4000/externals/bull-board",
         icon: <StepBackIcon />,
         external: true, // optional if url is already http(s)
-      }
+      },
     ],
   },
   {
@@ -144,23 +125,36 @@ function getCookie(request: Request, name: string) {
   return null;
 }
 
-function clearSessionCookieHeader() {
-  return `${SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`;
+function clearAuthCookieHeaders(): [string, string][] {
+  return [
+    [
+      "Set-Cookie",
+      `${SESSION_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`,
+    ],
+    [
+      "Set-Cookie",
+      `${IMPERSONATION_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`,
+    ],
+  ];
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = getCookie(request, SESSION_COOKIE_NAME);
   if (!cookie) throw redirect("/login");
 
+  const impersonationCookie =
+    getCookie(request, IMPERSONATION_COOKIE_NAME) ?? undefined;
+
   const { data, error } = await postAuthVerify({
-    body: { cookie },
+    body: {
+      cookie,
+      ...(impersonationCookie ? { impersonationCookie } : {}),
+    },
   });
 
   if (error || !data) {
     throw redirect("/login", {
-      headers: {
-        "Set-Cookie": clearSessionCookieHeader(),
-      },
+      headers: clearAuthCookieHeaders(),
     });
   }
 
@@ -169,17 +163,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: LoaderFunctionArgs) {
   const cookie = getCookie(request, SESSION_COOKIE_NAME);
+  const impersonationCookie =
+    getCookie(request, IMPERSONATION_COOKIE_NAME) ?? undefined;
 
   if (cookie) {
     await postAuthSignout({
-      body: { cookie },
+      body: {
+        cookie,
+        ...(impersonationCookie ? { impersonationCookie } : {}),
+      },
     });
   }
 
   throw redirect("/login", {
-    headers: {
-      "Set-Cookie": clearSessionCookieHeader(),
-    },
+    headers: clearAuthCookieHeaders(),
   });
 }
 
@@ -231,61 +228,74 @@ export default function DashboardPage() {
   const breadcrumbs = useDashboardBreadcrumbs(groups);
   const submit = useSubmit();
   const queryClient = useQueryClient();
+  const isImpersonating = user.impersonator != null;
 
   return (
-    <SidebarProvider className="h-svh overflow-hidden">
-      <AppSidebar
-        user={{
-          name: user.name,
-          email: user.email,
-        }}
-        teams={teams}
-        groups={groups}
-        onLogout={() => {
-          queryClient.clear();
-          submit(null, { method: "post" });
-        }}
-      />
-      <SidebarInset className="min-h-0 overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {breadcrumbs.map((crumb, index) => {
-                  const isLast = index === breadcrumbs.length - 1;
+    <>
+      {isImpersonating ? (
+        <ImpersonationBanner userName={user.name} userEmail={user.email} />
+      ) : null}
+      <div className={isImpersonating ? "pt-10" : undefined}>
+        <SidebarProvider
+          className={
+            isImpersonating
+              ? "h-[calc(100svh-2.5rem)] overflow-hidden"
+              : "h-svh overflow-hidden"
+          }
+        >
+          <AppSidebar
+            user={{
+              name: user.name,
+              email: user.email,
+            }}
+            groups={groups}
+            onLogout={() => {
+              queryClient.clear();
+              submit(null, { method: "post" });
+            }}
+          />
+          <SidebarInset className="min-h-0 overflow-hidden">
+            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <div className="flex items-center gap-2 px-4">
+                <SidebarTrigger className="-ml-1" />
+                <Separator
+                  orientation="vertical"
+                  className="mr-2 data-[orientation=vertical]:h-4"
+                />
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    {breadcrumbs.map((crumb, index) => {
+                      const isLast = index === breadcrumbs.length - 1;
 
-                  return (
-                    <Fragment key={crumb.href}>
-                      {index > 0 ? (
-                        <BreadcrumbSeparator className="hidden md:block" />
-                      ) : null}
-                      <BreadcrumbItem
-                        className={isLast ? undefined : "hidden md:block"}
-                      >
-                        {isLast ? (
-                          <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                        ) : (
-                          <BreadcrumbLink asChild>
-                            <Link to={crumb.href}>{crumb.label}</Link>
-                          </BreadcrumbLink>
-                        )}
-                      </BreadcrumbItem>
-                    </Fragment>
-                  );
-                })}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 pt-0">
-          <Outlet context={{ user }} />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+                      return (
+                        <Fragment key={crumb.href}>
+                          {index > 0 ? (
+                            <BreadcrumbSeparator className="hidden md:block" />
+                          ) : null}
+                          <BreadcrumbItem
+                            className={isLast ? undefined : "hidden md:block"}
+                          >
+                            {isLast ? (
+                              <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                            ) : (
+                              <BreadcrumbLink asChild>
+                                <Link to={crumb.href}>{crumb.label}</Link>
+                              </BreadcrumbLink>
+                            )}
+                          </BreadcrumbItem>
+                        </Fragment>
+                      );
+                    })}
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
+            </header>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 pt-0">
+              <Outlet context={{ user }} />
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+    </>
   );
 }
