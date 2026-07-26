@@ -4,7 +4,7 @@ import * as awilix from "awilix";
 import { fastify } from "fastify";
 import qs from "qs";
 
-import { EventBusModule } from "../modules/event-bus/event-bus.module";
+import { EventBusModule } from "@/modules/event-bus/event-bus.module";
 import { ClientError, ServerError } from "./errors";
 import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 

@@ -8,7 +8,8 @@
     "declarationMap": false,
     "sourceMap": false,
     "paths": {
-      "@plank/server": ["../plank-server/src/index.ts"]
+      "@plank/server": ["../plank-server/src/index.ts"],
+      "@/*": ["../plank-server/src/*"]
     }
   },
   "references": [{ "path": "../plank-server" }],
