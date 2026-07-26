@@ -5,8 +5,7 @@
     "rootDir": "./src",
     "composite": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@plank/db": ["../../plank-db/src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"]
