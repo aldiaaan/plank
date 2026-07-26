@@ -1,3 +1,6 @@
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import type { AuthenticatedUser, Permission } from "@plank/common";
+import type { Database } from "@plank/db";
 import type { AwilixContainer } from "awilix";
 import type {
   ContextConfigDefault,
@@ -11,13 +14,12 @@ import type {
   RouteHandlerMethod,
   RouteOptions as FastifyRouteOptions,
 } from "fastify";
-import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import type { Database } from "@plank/db";
-import type { AuthenticatedUser, Permission } from "@plank/common";
 import type Redis from "ioredis";
-import type { ServerModule } from "./module";
-import type { EventBus } from "../modules/event-bus/event-bus.module";
+
 import { SessionService } from "@/modules/session/session.service";
+
+import type { EventBus } from "../modules/event-bus/event-bus.module";
+import type { ServerModule } from "./module";
 
 export type RequestUser = AuthenticatedUser;
 

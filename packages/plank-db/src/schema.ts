@@ -1,3 +1,4 @@
+import { PERMISSIONS } from "@plank/common";
 import {
   boolean,
   bytea,
@@ -10,7 +11,6 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
-import { PERMISSIONS } from "@plank/common";
 
 export type { Permission } from "@plank/common";
 

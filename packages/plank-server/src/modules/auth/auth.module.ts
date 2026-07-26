@@ -1,11 +1,12 @@
 import type { Database } from "@plank/db";
 import { initializeSuperAdmin } from "@plank/db/auth";
 import type { FastifyBaseLogger } from "fastify";
+
+import { ServerModule } from "../../server/module";
 import type {
   ModuleRegistrationContext,
   RequestLocals,
 } from "../../server/types";
-import { ServerModule } from "../../server/module";
 import { SESSION_COOKIE_NAME } from "../session/constants";
 import { ForbiddenError, UnauthorizedError } from "./errors";
 import { hashPassword } from "./utils";

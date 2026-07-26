@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import type Redis from "ioredis";
+
 import type { BaseJob } from "./base-job";
 
 export abstract class BaseQueue<T extends BaseJob> {

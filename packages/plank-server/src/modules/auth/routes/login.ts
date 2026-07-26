@@ -1,11 +1,12 @@
-import { Type } from "typebox";
 import { findBasicAccountByIdentifier } from "@plank/db/auth";
-import { route } from "../../../server/module";
+import { Type } from "typebox";
+
 import { ErrorResponse } from "../../../server/errors";
+import { route } from "../../../server/module";
 import { SuccessResponse } from "../../../server/responses";
 import { SESSION_COOKIE_NAME, SESSION_TTL_MS } from "../../session/constants";
-import { verifyPassword } from "../utils";
 import { InvalidCredentialsError } from "../errors";
+import { verifyPassword } from "../utils";
 
 export const POST = route({
   schema: {

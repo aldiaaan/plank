@@ -1,7 +1,8 @@
 import cookie from "@fastify/cookie";
 import { asClass } from "awilix";
-import type { ModuleRegistrationContext } from "../../server/types";
+
 import { ServerModule } from "../../server/module";
+import type { ModuleRegistrationContext } from "../../server/types";
 import { SessionService } from "./session.service";
 
 export class SessionModule extends ServerModule {

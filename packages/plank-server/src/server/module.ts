@@ -1,6 +1,8 @@
 import { readdir } from "node:fs/promises";
-import { fileURLToPath, pathToFileURL } from "node:url";
 import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type {
   ContextConfigDefault,
   FastifyBaseLogger,
@@ -12,13 +14,13 @@ import type {
   RouteGenericInterface,
   RouteShorthandOptionsWithHandler,
 } from "fastify";
-import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { filenameToRoutePath, normalizeRouteExport } from "./utils/route";
+
 import type {
   ModuleRegistrationContext,
   RouteDefinition,
   RouteExport,
 } from "./types";
+import { filenameToRoutePath, normalizeRouteExport } from "./utils/route";
 
 const HTTP_METHODS = [
   "GET",

@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 import type { Config } from "drizzle-kit";
+
 import { databaseUrl } from "./src/constants";
 
 export default {

@@ -1,6 +1,7 @@
 import { Type } from "typebox";
-import { route } from "../../../server/module";
+
 import { ErrorResponse } from "../../../server/errors";
+import { route } from "../../../server/module";
 import { SuccessResponse } from "../../../server/responses";
 import { PermissionSchema } from "../../../server/schemas";
 

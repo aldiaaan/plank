@@ -1,4 +1,5 @@
 import type { Job } from "bullmq";
+
 import type { BaseJob } from "./base-job";
 
 export abstract class BaseProcessor<T extends BaseJob = BaseJob> {

@@ -1,11 +1,12 @@
-import { fastify } from "fastify";
 import cors from "@fastify/cors";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import * as awilix from "awilix";
+import { fastify } from "fastify";
 import qs from "qs";
-import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
+
 import { EventBusModule } from "../modules/event-bus/event-bus.module";
 import { ClientError, ServerError } from "./errors";
+import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
 
 export class PlankServer {
   private readonly container = awilix.createContainer();

@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
-import type { Database, Session } from "@plank/db";
+
 import type { AuthIdentity, Permission } from "@plank/common";
+import type { Database, Session } from "@plank/db";
 import {
   createSession,
   deleteSessionById,
@@ -8,6 +9,7 @@ import {
   findValidSessionById,
 } from "@plank/db/queries/sessions";
 import { findUserById } from "@plank/db/queries/users";
+
 import { generateSecureRandomString, hashSecret } from "../auth/utils";
 import {
   InvalidSessionTokenError,

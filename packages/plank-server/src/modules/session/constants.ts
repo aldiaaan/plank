@@ -1,5 +1,5 @@
 export {
-  SESSION_COOKIE_NAME,
   IMPERSONATION_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
   SESSION_TTL_MS,
 } from "@plank/common";

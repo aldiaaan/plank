@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+
 import { relations } from "./relations";
 
 export type InitializeDatabaseOptions = {
@@ -22,5 +23,5 @@ export type TransactionClient = Parameters<
 
 export type DatabaseOrTransaction = Database | TransactionClient;
 
-export * from "./schema";
 export { relations } from "./relations";
+export * from "./schema";

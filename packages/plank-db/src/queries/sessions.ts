@@ -11,14 +11,15 @@ import {
   or,
   type SQL,
 } from "drizzle-orm";
+
 import type { DatabaseOrTransaction } from "..";
 import {
+  type NewSession,
+  type Permission,
   roles,
   sessions,
   userRoles,
   users,
-  type NewSession,
-  type Permission,
 } from "../schema";
 import { buildOrderBy, type SortInput } from "./sort";
 

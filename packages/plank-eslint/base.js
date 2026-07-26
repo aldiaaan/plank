@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 import tseslint from "typescript-eslint";
 
 const baseConfig = defineConfig(
@@ -9,6 +10,9 @@ const baseConfig = defineConfig(
   {
     files: ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}"],
     extends: [js.configs.recommended, tseslint.configs.recommended],
+    plugins: {
+      "simple-import-sort": simpleImportSort,
+    },
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -18,13 +22,8 @@ const baseConfig = defineConfig(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
-      "sort-imports": [
-        "error",
-        {
-          ignoreCase: true,
-          allowSeparatedGroups: true,
-        },
-      ],
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
     },
   },
 );

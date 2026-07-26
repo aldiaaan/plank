@@ -1,3 +1,4 @@
+import { createClient } from "@hey-api/openapi-ts";
 import {
   AuthModule,
   DatabaseModule,
@@ -8,7 +9,6 @@ import {
   SessionModule,
   UserModule,
 } from "@plank/server";
-import { createClient } from "@hey-api/openapi-ts";
 
 async function main() {
   const server = new PlankServer({

@@ -4,8 +4,10 @@ import { FastifyAdapter } from "@bull-board/fastify";
 import { asValue } from "awilix";
 import { Job, Worker } from "bullmq";
 import Redis from "ioredis";
+
 import { ServerModule } from "../../server/module";
 import type { ModuleRegistrationContext } from "../../server/types";
+import { modulesRootDir } from "../../server/utils/modules-root";
 import type { BaseJob } from "./base-job";
 import { BaseProcessor } from "./base-processor";
 import { BaseQueue } from "./base-queue";
@@ -14,7 +16,6 @@ import {
   discoverQueueFiles,
   importDefaultExport,
 } from "./discover";
-import { modulesRootDir } from "../../server/utils/modules-root";
 
 export type BackgroundJobModuleOptions = {
   redisUrl: string;

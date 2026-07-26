@@ -1,4 +1,5 @@
 import { asClass } from "awilix";
+
 import { ServerModule } from "../../server/module";
 import type { ModuleRegistrationContext } from "../../server/types";
 

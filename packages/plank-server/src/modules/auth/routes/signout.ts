@@ -1,4 +1,5 @@
 import { Type } from "typebox";
+
 import { route } from "../../../server/module";
 import { SuccessResponse } from "../../../server/responses";
 import { SESSION_COOKIE_NAME } from "../../session/constants";

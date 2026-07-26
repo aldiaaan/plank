@@ -1,5 +1,6 @@
-import { asValue } from "awilix";
 import { initializeDatabase } from "@plank/db";
+import { asValue } from "awilix";
+
 import { ServerModule } from "../../server/module";
 import type { ModuleRegistrationContext } from "../../server/types";
 

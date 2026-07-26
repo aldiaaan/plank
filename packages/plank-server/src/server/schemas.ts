@@ -1,5 +1,5 @@
-import { PERMISSIONS, type Permission } from "@plank/common";
-import { Type, type Static, type TLiteral, type TUnion } from "typebox";
+import { type Permission,PERMISSIONS } from "@plank/common";
+import { type Static, type TLiteral, type TUnion,Type } from "typebox";
 
 type PermissionLiteral = TLiteral<Permission>;
 

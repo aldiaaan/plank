@@ -1,8 +1,9 @@
+import { type AuthIdentity, hasPermission, type Permission } from "@plank/common";
 import { findUserById } from "@plank/db/queries/users";
-import { hasPermission, type AuthIdentity, type Permission } from "@plank/common";
 import { Type } from "typebox";
-import { route } from "../../../server/module";
+
 import { ErrorResponse } from "../../../server/errors";
+import { route } from "../../../server/module";
 import { SuccessResponse } from "../../../server/responses";
 import {
   IMPERSONATION_COOKIE_NAME,

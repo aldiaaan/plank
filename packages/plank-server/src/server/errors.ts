@@ -1,4 +1,4 @@
-import { Type, type Static } from "typebox";
+import { type Static,Type } from "typebox";
 
 export const ErrorResponse = Type.Object({
   message: Type.String(),
