@@ -4,12 +4,26 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./permissions": "./src/permissions.ts",
+    "./session": "./src/session.ts",
+    "./sorting": "./src/sorting.ts",
+    "./auth": "./src/auth.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc6 --noEmit"
+  },
+  "devDependencies": {
+    "@plank/tsconfig": "workspace:*",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
       "version": "^11.11.0",
       "onFail": "download"
     }
-  },
-  "type": "module"
+  }
 }

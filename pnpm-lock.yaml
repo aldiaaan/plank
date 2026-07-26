@@ -48,6 +48,9 @@ importers:
       '@plank/client':
         specifier: workspace:*
         version: link:../../packages/plank-client
+      '@plank/common':
+        specifier: workspace:*
+        version: link:../../packages/plank-common
       '@plank/server':
         specifier: workspace:*
         version: link:../../packages/plank-server
@@ -183,10 +186,20 @@ importers:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
 
-  packages/plank-common: {}
+  packages/plank-common:
+    devDependencies:
+      '@plank/tsconfig':
+        specifier: workspace:*
+        version: link:../plank-tsconfig
+      typescript:
+        specifier: npm:@typescript/typescript6@^6.0.2
+        version: '@typescript/typescript6@6.0.2'
 
   packages/plank-db:
     dependencies:
+      '@plank/common':
+        specifier: workspace:*
+        version: link:../plank-common
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -257,6 +270,9 @@ importers:
       '@node-rs/argon2':
         specifier: ^2.0.2
         version: 2.0.2
+      '@plank/common':
+        specifier: workspace:*
+        version: link:../plank-common
       '@plank/db':
         specifier: workspace:*
         version: link:../plank-db
@@ -329,6 +345,9 @@ importers:
       '@fontsource-variable/outfit':
         specifier: ^5.2.8
         version: 5.2.8
+      '@plank/common':
+        specifier: workspace:*
+        version: link:../plank-common
       '@plank/db':
         specifier: workspace:*
         version: link:../plank-db

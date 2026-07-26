@@ -20,6 +20,7 @@
   "type": "module",
   "dependencies": {
     "@plank/client": "workspace:*",
+    "@plank/common": "workspace:*",
     "@plank/server": "workspace:*",
     "@react-router/express": "^8.2.0",
     "@react-router/node": "^8.2.0",

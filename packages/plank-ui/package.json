@@ -14,6 +14,7 @@
     "@types/react": "^19.2.17"
   },
   "peerDependencies": {
+    "@plank/common": "workspace:*",
     "@plank/db": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
     "date-fns": "^4.4.0",

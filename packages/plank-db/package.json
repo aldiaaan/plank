@@ -17,6 +17,7 @@
     "./queries/*": "./src/queries/*.ts"
   },
   "dependencies": {
+    "@plank/common": "workspace:*",
     "dotenv": "^17.4.2",
     "drizzle-orm": "1.0.0-rc.4",
     "nuqs": "^2.9.0",

@@ -45,6 +45,7 @@
     "@fastify/swagger": "^9.8.0",
     "@fastify/type-provider-typebox": "^6.1.0",
     "@node-rs/argon2": "^2.0.2",
+    "@plank/common": "workspace:*",
     "@plank/db": "workspace:*",
     "@scalar/fastify-api-reference": "^1.62.5",
     "awilix": "^13.0.5",

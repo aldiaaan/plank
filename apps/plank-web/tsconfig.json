@@ -17,7 +17,9 @@
     "paths": {
       "~/*": ["./app/*"],
       "@plank/ui/*": ["../../packages/plank-ui/src/*"],
-      "@plank/client": ["../../packages/plank-client/src/index.ts"]
+      "@plank/client": ["../../packages/plank-client/src/index.ts"],
+      "@plank/common": ["../../packages/plank-common/src/index.ts"],
+      "@plank/common/*": ["../../packages/plank-common/src/*"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,
