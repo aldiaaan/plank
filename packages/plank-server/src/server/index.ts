@@ -10,6 +10,7 @@ import type { ModuleRegistrationContext, PlankServerOptions } from "@/server/typ
 
 export class PlankServer {
   private readonly container = awilix.createContainer();
+  private modulesRegistered = false;
   private readonly app = fastify({
     // Nested query objects (e.g. sorting[0][id]=…) need qs; Node's parser keeps flat keys.
     querystringParser: (str) => qs.parse(str),
@@ -61,8 +62,12 @@ export class PlankServer {
     });
   }
 
-  async start() {
-    this.app.log.info(`Starting Plank server on port ${this.options.port}`);
+  /**
+   * Register plugins + modules without listening. Used by `start()` and by
+   * codegen (`openApiDocument()`), which must not fight over a fixed port.
+   */
+  private async registerModules() {
+    if (this.modulesRegistered) return;
 
     await this.initializeErrorHandlers();
 
@@ -105,6 +110,14 @@ export class PlankServer {
       await module.register(context);
     }
 
+    this.modulesRegistered = true;
+  }
+
+  async start() {
+    this.app.log.info(`Starting Plank server on port ${this.options.port}`);
+
+    await this.registerModules();
+
     const shutdownSignals = ["SIGTERM", "SIGINT"];
 
     shutdownSignals.forEach((signal) => {
@@ -117,6 +130,13 @@ export class PlankServer {
     });
 
     await this.app.listen({ port: this.options.port, host: "0.0.0.0" });
+  }
+
+  /** Build the OpenAPI document in-process (no TCP listen). */
+  async openApiDocument() {
+    await this.registerModules();
+    await this.app.ready();
+    return this.app.swagger();
   }
 
   async stop() {
