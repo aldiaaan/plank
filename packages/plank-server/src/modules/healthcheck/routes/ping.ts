@@ -1,7 +1,7 @@
 import { listUsers } from "@plank/db/queries/users";
 import { Type } from "typebox";
 
-import { route } from "../../../server/module";
+import { route } from "@/server/module";
 
 const Querystring = Type.Object({
   name: Type.Optional(

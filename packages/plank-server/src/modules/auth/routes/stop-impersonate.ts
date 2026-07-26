@@ -1,13 +1,13 @@
 import { Type } from "typebox";
 
-import { ErrorResponse } from "../../../server/errors";
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
+import { ErrorResponse } from "@/server/errors";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
 import {
   IMPERSONATION_COOKIE_NAME,
   SESSION_COOKIE_NAME,
-} from "../../session/constants";
-import { NotImpersonatingError, UnauthorizedError } from "../errors";
+} from "@/modules/session/constants";
+import { NotImpersonatingError, UnauthorizedError } from "@/modules/auth/errors";
 
 const AuthUserSchema = Type.Object({
   id: Type.String({ format: "uuid" }),

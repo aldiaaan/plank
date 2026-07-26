@@ -1,4 +1,4 @@
-import { ClientError } from "../../server/errors";
+import { ClientError } from "@/server/errors";
 
 export class RoleNameAlreadyTakenError extends ClientError {
   message = "A role with this name already exists.";

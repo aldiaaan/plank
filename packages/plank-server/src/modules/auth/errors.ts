@@ -1,4 +1,4 @@
-import { ClientError } from "../../server/errors";
+import { ClientError } from "@/server/errors";
 
 export class InvalidCredentialsError extends ClientError {
   message = "Invalid credentials, please try again.";

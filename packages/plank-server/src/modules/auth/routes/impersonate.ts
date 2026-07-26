@@ -2,21 +2,21 @@ import { type AuthIdentity, hasPermission, type Permission } from "@plank/common
 import { findUserById } from "@plank/db/queries/users";
 import { Type } from "typebox";
 
-import { ErrorResponse } from "../../../server/errors";
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
+import { ErrorResponse } from "@/server/errors";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
 import {
   IMPERSONATION_COOKIE_NAME,
   SESSION_COOKIE_NAME,
   SESSION_TTL_MS,
-} from "../../session/constants";
+} from "@/modules/session/constants";
 import {
   AlreadyImpersonatingError,
   CannotImpersonateSelfError,
   ForbiddenError,
   ImpersonationUserNotFoundError,
   UnauthorizedError,
-} from "../errors";
+} from "@/modules/auth/errors";
 
 const ImpersonationUserSchema = Type.Object({
   id: Type.String({ format: "uuid" }),

@@ -1,8 +1,8 @@
-import { ServerModule } from "../../server/module";
+import { ServerModule } from "@/server/module";
 import type {
   DocumentationModuleOptions,
   ModuleRegistrationContext,
-} from "../../server/types";
+} from "@/server/types";
 
 const SCALAR_ROUTE_PREFIX = "/externals/scalar";
 

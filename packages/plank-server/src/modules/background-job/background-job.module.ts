@@ -5,17 +5,17 @@ import { asValue } from "awilix";
 import { Job, Worker } from "bullmq";
 import Redis from "ioredis";
 
-import { ServerModule } from "../../server/module";
-import type { ModuleRegistrationContext } from "../../server/types";
-import { modulesRootDir } from "../../server/utils/modules-root";
-import type { BaseJob } from "./base-job";
-import { BaseProcessor } from "./base-processor";
-import { BaseQueue } from "./base-queue";
+import { ServerModule } from "@/server/module";
+import type { ModuleRegistrationContext } from "@/server/types";
+import { modulesRootDir } from "@/server/utils/modules-root";
+import type { BaseJob } from "@/modules/background-job/base-job";
+import { BaseProcessor } from "@/modules/background-job/base-processor";
+import { BaseQueue } from "@/modules/background-job/base-queue";
 import {
   discoverProcessorFiles,
   discoverQueueFiles,
   importDefaultExport,
-} from "./discover";
+} from "@/modules/background-job/discover";
 
 export type BackgroundJobModuleOptions = {
   redisUrl: string;

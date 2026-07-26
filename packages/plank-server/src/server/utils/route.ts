@@ -1,6 +1,6 @@
 import { basename, extname } from "node:path";
 
-import type { RouteExport, RouteHandler, RouteOptions } from "../types";
+import type { RouteExport, RouteHandler, RouteOptions } from "@/server/types";
 
 export function isHandler(value: RouteExport): value is RouteHandler {
   return typeof value === "function";

@@ -1,6 +1,6 @@
 import type { Job } from "bullmq";
 
-import type { BaseJob } from "./base-job";
+import type { BaseJob } from "@/modules/background-job/base-job";
 
 export abstract class BaseProcessor<T extends BaseJob = BaseJob> {
   public abstract readonly name: string;

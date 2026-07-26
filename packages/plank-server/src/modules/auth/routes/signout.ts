@@ -1,11 +1,11 @@
 import { Type } from "typebox";
 
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
 import {
   IMPERSONATION_COOKIE_NAME,
   SESSION_COOKIE_NAME,
-} from "../../session/constants";
+} from "@/modules/session/constants";
 
 export const POST = route({
   schema: {

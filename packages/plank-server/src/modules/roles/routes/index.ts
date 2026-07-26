@@ -2,11 +2,11 @@ import type { Permission } from "@plank/common";
 import { createRole, listRoles } from "@plank/db/queries/roles";
 import { Type } from "typebox";
 
-import { ErrorResponse } from "../../../server/errors";
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
-import { PermissionSchema, SortInputSchema } from "../../../server/schemas";
-import { RoleNameAlreadyTakenError } from "../errors";
+import { ErrorResponse } from "@/server/errors";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
+import { PermissionSchema, SortInputSchema } from "@/server/schemas";
+import { RoleNameAlreadyTakenError } from "@/modules/roles/errors";
 
 const RoleItem = Type.Object({
   id: Type.String({ format: "uuid" }),

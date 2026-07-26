@@ -1,4 +1,4 @@
-import { ClientError } from "../../server/errors";
+import { ClientError } from "@/server/errors";
 
 export class EmailAlreadyTakenError extends ClientError {
   message = "A user with this email already exists.";

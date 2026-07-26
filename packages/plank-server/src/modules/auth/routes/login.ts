@@ -1,12 +1,12 @@
 import { findBasicAccountByIdentifier } from "@plank/db/auth";
 import { Type } from "typebox";
 
-import { ErrorResponse } from "../../../server/errors";
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
-import { SESSION_COOKIE_NAME, SESSION_TTL_MS } from "../../session/constants";
-import { InvalidCredentialsError } from "../errors";
-import { verifyPassword } from "../utils";
+import { ErrorResponse } from "@/server/errors";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
+import { SESSION_COOKIE_NAME, SESSION_TTL_MS } from "@/modules/session/constants";
+import { InvalidCredentialsError } from "@/modules/auth/errors";
+import { verifyPassword } from "@/modules/auth/utils";
 
 export const POST = route({
   schema: {

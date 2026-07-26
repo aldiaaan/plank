@@ -5,8 +5,8 @@ import { fastify } from "fastify";
 import qs from "qs";
 
 import { EventBusModule } from "@/modules/event-bus/event-bus.module";
-import { ClientError, ServerError } from "./errors";
-import type { ModuleRegistrationContext, PlankServerOptions } from "./types";
+import { ClientError, ServerError } from "@/server/errors";
+import type { ModuleRegistrationContext, PlankServerOptions } from "@/server/types";
 
 export class PlankServer {
   private readonly container = awilix.createContainer();

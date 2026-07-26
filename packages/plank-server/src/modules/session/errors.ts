@@ -1,4 +1,4 @@
-import { ClientError } from "../../server/errors";
+import { ClientError } from "@/server/errors";
 
 export class InvalidSessionTokenError extends ClientError {
   code = "ERR-0200";

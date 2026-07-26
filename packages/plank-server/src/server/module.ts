@@ -19,8 +19,8 @@ import type {
   ModuleRegistrationContext,
   RouteDefinition,
   RouteExport,
-} from "./types";
-import { filenameToRoutePath, normalizeRouteExport } from "./utils/route";
+} from "@/server/types";
+import { filenameToRoutePath, normalizeRouteExport } from "@/server/utils/route";
 
 const HTTP_METHODS = [
   "GET",

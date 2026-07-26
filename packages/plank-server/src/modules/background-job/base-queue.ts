@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import type Redis from "ioredis";
 
-import type { BaseJob } from "./base-job";
+import type { BaseJob } from "@/modules/background-job/base-job";
 
 export abstract class BaseQueue<T extends BaseJob> {
   private static _globalRedis: Redis | null = null;

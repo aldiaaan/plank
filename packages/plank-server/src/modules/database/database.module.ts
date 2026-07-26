@@ -1,8 +1,8 @@
 import { initializeDatabase } from "@plank/db";
 import { asValue } from "awilix";
 
-import { ServerModule } from "../../server/module";
-import type { ModuleRegistrationContext } from "../../server/types";
+import { ServerModule } from "@/server/module";
+import type { ModuleRegistrationContext } from "@/server/types";
 
 export type DatabaseModuleOptions = {
   databaseUrl: string;

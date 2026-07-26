@@ -1,9 +1,9 @@
 import { Type } from "typebox";
 
-import { ErrorResponse } from "../../../server/errors";
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
-import { PermissionSchema } from "../../../server/schemas";
+import { ErrorResponse } from "@/server/errors";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
+import { PermissionSchema } from "@/server/schemas";
 
 const ImpersonatorSchema = Type.Object({
   id: Type.String({ format: "uuid" }),

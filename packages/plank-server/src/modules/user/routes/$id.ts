@@ -1,10 +1,10 @@
 import { deleteUserById } from "@plank/db/queries/users";
 import { Type } from "typebox";
 
-import { ErrorResponse } from "../../../server/errors";
-import { route } from "../../../server/module";
-import { SuccessResponse } from "../../../server/responses";
-import { CannotDeleteSelfError, UserNotFoundError } from "../errors";
+import { ErrorResponse } from "@/server/errors";
+import { route } from "@/server/module";
+import { SuccessResponse } from "@/server/responses";
+import { CannotDeleteSelfError, UserNotFoundError } from "@/modules/user/errors";
 
 const DeletedUserItem = Type.Object({
   id: Type.String({ format: "uuid" }),

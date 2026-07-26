@@ -18,7 +18,7 @@ import type Redis from "ioredis";
 
 import type { EventBus } from "@/modules/event-bus/event-bus.module";
 import type { SessionService } from "@/modules/session/session.service";
-import type { ServerModule } from "./module";
+import type { ServerModule } from "@/server/module";
 
 export type RequestUser = AuthenticatedUser;
 

@@ -10,12 +10,12 @@ import {
 } from "@plank/db/queries/sessions";
 import { findUserById } from "@plank/db/queries/users";
 
-import { generateSecureRandomString, hashSecret } from "../auth/utils";
+import { generateSecureRandomString, hashSecret } from "@/modules/auth/utils";
 import {
   InvalidSessionTokenError,
   SessionHashNotMatchError,
   SessionNotFoundError,
-} from "./errors";
+} from "@/modules/session/errors";
 
 export type CreateSessionOptions = {
   userId: string;

@@ -1,4 +1,4 @@
-import { ServerModule } from "../../server/module";
+import { ServerModule } from "@/server/module";
 
 export class UserModule extends ServerModule {
   name = "user";
